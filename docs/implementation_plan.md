@@ -28,11 +28,11 @@ A comprehensive implementation plan for the Flow-ERP Mini ERP System using Next.
 
 #### 1.1 Project Initialization
 
-- [ ] Initialize Next.js project with App Router
-- [ ] Configure TypeScript
-- [ ] Setup Tailwind CSS & shadcn/ui
-- [ ] Configure ESLint & Prettier
-- [ ] Setup Git hooks (Husky + lint-staged)
+- [x] Initialize Next.js project with App Router
+- [x] Configure TypeScript
+- [x] Setup Tailwind CSS & shadcn/ui
+- [x] Configure ESLint & Prettier
+- [x] Setup Git hooks (Husky + lint-staged)
 
 #### 1.2 Database Setup (PostgreSQL + Prisma)
 

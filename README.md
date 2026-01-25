@@ -48,8 +48,12 @@ The project is built using **Next.js** with an integrated **GraphQL API**, focus
 
 ### Database
 
-- MongoDB or PostgreSQL
-- Prisma or Mongoose
+- PostgreSQL
+- Prisma
+
+### Storage
+
+- **Cloudinary** (Image Management)
 
 ---
 

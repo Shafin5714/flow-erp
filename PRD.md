@@ -58,8 +58,12 @@ Flow-ERP aims to demonstrate real-world ERP workflows, clean architecture, and s
 
 ### Database
 
-- MongoDB or PostgreSQL
-- Prisma / Mongoose
+- PostgreSQL
+- Prisma
+
+### Storage
+
+- **Cloudinary** (Image storage)
 
 ---
 

@@ -17,6 +17,7 @@ A comprehensive implementation plan for the Flow-ERP Mini ERP System using Next.
 | Frontend | Next.js (App Router), React, Tailwind CSS, shadcn/ui, Apollo Client |
 | Backend  | GraphQL (Apollo Server / GraphQL Yoga), Next.js API Routes          |
 | Database | PostgreSQL with Prisma ORM                                          |
+| Storage  | Cloudinary                                                          |
 | Auth     | JWT / Session-based Authentication                                  |
 
 ---
@@ -46,6 +47,13 @@ A comprehensive implementation plan for the Flow-ERP Mini ERP System using Next.
 - [ ] Create API route handler (`/api/graphql`)
 - [ ] Configure Apollo Client for frontend
 - [ ] Setup GraphQL Code Generator (optional)
+
+#### 1.4 Storage Setup (Cloudinary)
+
+- [ ] Create Cloudinary account
+- [ ] Install Cloudinary SDK
+- [ ] Configure environment variables
+- [ ] Create image upload utility function
 
 ---
 
@@ -533,7 +541,8 @@ flow-erp/
   "graphql": "^16.x",
   "@prisma/client": "^5.x",
   "bcryptjs": "^2.x",
-  "jsonwebtoken": "^9.x"
+  "jsonwebtoken": "^9.x",
+  "cloudinary": "^2.x"
 }
 ```
 
@@ -576,6 +585,11 @@ JWT_EXPIRES_IN=7d
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NODE_ENV=development
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ---

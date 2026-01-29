@@ -40,8 +40,8 @@ export const userResolvers = {
 
       const token = jwt.sign(
         { id: user.id, email: user.email, name: user.name, role: user.role },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        JWT_SECRET as jwt.Secret,
+        { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] }
       );
 
       return { token, user };
@@ -73,8 +73,8 @@ export const userResolvers = {
 
       const token = jwt.sign(
         { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        JWT_SECRET as jwt.Secret,
+        { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] }
       );
 
       return { token, user: newUser };

@@ -17,20 +17,23 @@ async function startServer() {
   await server.start();
 
   app.use(
-    "/graphql",
     cors<cors.CorsRequest>({
       origin: process.env.CLIENT_URL || "http://localhost:3000",
       credentials: true,
-    }),
-    express.json(),
-    expressMiddleware(server, {
-      context: createContext,
     })
   );
+  app.use(express.json());
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
+  app.use(
+    "/graphql",
+    expressMiddleware(server, {
+      context: createContext,
+    })
+  );
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);

@@ -1,15 +1,149 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id                String         @id @default(cuid())
+  name              String
+  sku               String         @unique
+  categoryId        String
+  unit              String
+  costPrice         Float
+  salePrice         Float
+  stock             Int            @default(0)
+  lowStockThreshold Int            @default(10)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  category          Category       @relation(fields: [categoryId], references: [id])
+  purchaseItems     PurchaseItem[]
+  saleItems         SaleItem[]
+}
+
+model Customer {
+  id           String        @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  balance      Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  sales        Sale[]
+  transactions Transaction[]
+}
+
+model Vendor {
+  id           String        @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  balance      Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  purchases    Purchase[]
+  transactions Transaction[]
+}
+
+model Sale {
+  id            String      @id @default(cuid())
+  invoiceNumber String      @unique
+  customerId    String?
+  subtotal      Float
+  discount      Float       @default(0)
+  total         Float
+  paymentMode   PaymentMode @default(CASH)
+  paidAmount    Float
+  dueAmount     Float
+  createdById   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Int
+  unitPrice Float
+  total     Float
+  product   Product @relation(fields: [productId], references: [id])
+  sale      Sale    @relation(fields: [saleId], references: [id])
+}
+
+model Purchase {
+  id         String         @id @default(cuid())
+  vendorId   String
+  subtotal   Float
+  total      Float
+  paidAmount Float
+  dueAmount  Float
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  vendor     Vendor         @relation(fields: [vendorId], references: [id])
+  items      PurchaseItem[]
+}
+
+model PurchaseItem {
+  id         String   @id @default(cuid())
+  purchaseId String
+  productId  String
+  quantity   Int
+  unitPrice  Float
+  total      Float
+  product    Product  @relation(fields: [productId], references: [id])
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  name         String
+  type         AccountType
+  balance      Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  accountId   String
+  type        TransactionType
+  amount      Float
+  description String?
+  reference   String?
+  customerId  String?
+  vendorId    String?
+  createdAt   DateTime        @default(now())
+  account     Account         @relation(fields: [accountId], references: [id])
+  customer    Customer?       @relation(fields: [customerId], references: [id])
+  vendor      Vendor?         @relation(fields: [vendorId], references: [id])
 }
 
 enum Role {
@@ -35,144 +169,4 @@ enum AccountType {
   BANK
   CAPITAL
   LOAN
-}
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      Role     @default(STAFF)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sales     Sale[]
-}
-
-model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model Product {
-  id                String         @id @default(cuid())
-  name              String
-  sku               String         @unique
-  categoryId        String
-  category          Category       @relation(fields: [categoryId], references: [id])
-  unit              String
-  costPrice         Float
-  salePrice         Float
-  stock             Int            @default(0)
-  lowStockThreshold Int            @default(10)
-  saleItems         SaleItem[]
-  purchaseItems     PurchaseItem[]
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-}
-
-model Customer {
-  id           String        @id @default(cuid())
-  name         String
-  email        String?
-  phone        String?
-  address      String?
-  balance      Float         @default(0)
-  sales        Sale[]
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model Vendor {
-  id           String        @id @default(cuid())
-  name         String
-  email        String?
-  phone        String?
-  address      String?
-  balance      Float         @default(0)
-  purchases    Purchase[]
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model Sale {
-  id            String      @id @default(cuid())
-  invoiceNumber String      @unique
-  customerId    String?
-  customer      Customer?   @relation(fields: [customerId], references: [id])
-  items         SaleItem[]
-  subtotal      Float
-  discount      Float       @default(0)
-  total         Float
-  paymentMode   PaymentMode @default(CASH)
-  paidAmount    Float
-  dueAmount     Float
-  createdById   String
-  createdBy     User        @relation(fields: [createdById], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-}
-
-model SaleItem {
-  id        String  @id @default(cuid())
-  saleId    String
-  sale      Sale    @relation(fields: [saleId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  unitPrice Float
-  total     Float
-}
-
-model Purchase {
-  id        String         @id @default(cuid())
-  vendorId  String
-  vendor    Vendor         @relation(fields: [vendorId], references: [id])
-  items     PurchaseItem[]
-  subtotal  Float
-  total     Float
-  paidAmount Float
-  dueAmount  Float
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-}
-
-model PurchaseItem {
-  id         String   @id @default(cuid())
-  purchaseId String
-  purchase   Purchase @relation(fields: [purchaseId], references: [id])
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
-  quantity   Int
-  unitPrice  Float
-  total      Float
-}
-
-model Account {
-  id           String        @id @default(cuid())
-  name         String
-  type         AccountType
-  balance      Float         @default(0)
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model Transaction {
-  id          String          @id @default(cuid())
-  accountId   String
-  account     Account         @relation(fields: [accountId], references: [id])
-  type        TransactionType
-  amount      Float
-  description String?
-  reference   String?
-  customerId  String?
-  customer    Customer?       @relation(fields: [customerId], references: [id])
-  vendorId    String?
-  vendor      Vendor?         @relation(fields: [vendorId], references: [id])
-  createdAt   DateTime        @default(now())
 }

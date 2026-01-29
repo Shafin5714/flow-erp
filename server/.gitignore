@@ -1,0 +1,8 @@
+# Server
+node_modules/
+dist/
+*.log
+.env
+
+# Prisma
+prisma/*.db

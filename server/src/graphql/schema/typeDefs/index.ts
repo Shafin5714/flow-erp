@@ -1,0 +1,10 @@
+export { baseTypeDefs } from "./base.js";
+export { userTypeDefs } from "./user.js";
+export { categoryTypeDefs } from "./category.js";
+export { productTypeDefs } from "./product.js";
+export { customerTypeDefs } from "./customer.js";
+export { vendorTypeDefs } from "./vendor.js";
+export { saleTypeDefs } from "./sale.js";
+export { purchaseTypeDefs } from "./purchase.js";
+export { accountTypeDefs } from "./account.js";
+export { dashboardTypeDefs } from "./dashboard.js";

@@ -1,163 +1,134 @@
-# Flow-ERP 🚀
+# Flow-ERP
 
-**Mini ERP System built with Next.js & GraphQL**
+A modern, full-stack Mini ERP application with separate client and server architecture.
 
-Flow-ERP is a modern, full-stack **Mini ERP application** designed to manage core business operations such as **Inventory, Sales, Purchases, Accounting, Customers, Vendors, and Reporting**.
-The project is built using **Next.js** with an integrated **GraphQL API**, focusing on real-world ERP workflows and scalable architecture.
+## Tech Stack
 
----
+- **Frontend (Client):** Next.js 16, React 19, Tailwind CSS, shadcn/ui, Apollo Client
+- **Backend (Server):** Express.js, Apollo Server, GraphQL
+- **Database:** PostgreSQL with Prisma ORM
+- **Storage:** Cloudinary
+- **Auth:** JWT-based authentication
 
-## ✨ Features
-
-- 🔐 Authentication & Role-Based Access Control (Admin, Manager, Staff)
-- 📊 Dashboard with sales, purchases, profit & alerts
-- 📦 Inventory Management with real-time stock updates
-- 🧾 Sales & POS module with invoice generation
-- 🛒 Purchase & Vendor management
-- 👥 Customer management with transaction history
-- 💰 Accounting module (cash, capital, loans, income & expenses)
-- 📈 Reports (sales, purchases, inventory valuation, P&L)
-- ⚡ Optimized data fetching using GraphQL
-
----
-
-## 🧑‍💼 User Roles
-
-| Role    | Access                               |
-| ------- | ------------------------------------ |
-| Admin   | Full access, user & role management  |
-| Manager | Inventory, sales, purchases, reports |
-| Staff   | POS, sales entry, customers          |
-
----
-
-## 🛠 Tech Stack
-
-### Frontend
-
-- **Next.js (App Router)**
-- React
-- Tailwind CSS + shadcn/ui
-- Apollo Client
-
-### Backend (inside Next.js)
-
-- **GraphQL (Apollo Server / GraphQL Yoga)**
-- Next.js API Routes / Route Handlers
-- JWT / Session-based Authentication
-
-### Database
-
-- PostgreSQL
-- Prisma
-
-### Storage
-
-- **Cloudinary** (Image Management)
-
----
-
-## 🧠 Why GraphQL?
-
-Flow-ERP uses GraphQL to:
-
-- Fetch exactly the data needed (no over-fetching)
-- Power complex dashboards with a **single query**
-- Support scalable and maintainable API design
-- Handle deeply related ERP data efficiently
-
----
-
-## 📂 Project Structure (Simplified)
+## Project Structure
 
 ```
 flow-erp/
-├─ app/
-│  ├─ api/graphql/      # GraphQL API
-│  ├─ dashboard/        # Dashboard pages
-│  ├─ auth/             # Login & auth pages
+├── client/          # Next.js frontend application
+│   ├── app/         # Next.js app router pages
+│   ├── components/  # React components
+│   ├── lib/         # Utilities and Apollo Client setup
+│   └── public/      # Static assets
 │
-├─ graphql/
-│  ├─ schema/           # Type definitions
-│  ├─ resolvers/        # Business logic
+├── server/          # Express + GraphQL backend
+│   ├── src/         # Server source code
+│   │   ├── graphql/ # GraphQL schema and resolvers
+│   │   └── lib/     # Server utilities
+│   └── prisma/      # Database schema and migrations
 │
-├─ lib/
-│  ├─ db.ts             # Database connection
-│  ├─ auth.ts           # Auth utilities
-│
-└─ README.md
+└── docs/            # Documentation
 ```
 
----
+## Getting Started
 
-## 🚀 Getting Started
+### Prerequisites
 
-### 1️⃣ Clone the Repository
+- Node.js 20+
+- PostgreSQL database (or Neon Cloud)
+
+### Installation
+
+1. Clone the repository
+2. Install all dependencies:
 
 ```bash
-git clone https://github.com/your-username/flow-erp.git
-cd flow-erp
+npm run install:all
 ```
 
-### 2️⃣ Install Dependencies
+3. Configure environment variables:
+
+**Server (`server/.env`):**
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/flow_erp
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRES_IN=7d
+PORT=4000
+CLIENT_URL=http://localhost:3000
+```
+
+**Client (`client/.env.local`):**
+
+```env
+NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4. Set up the database:
 
 ```bash
-npm install
+npm run db:generate
+npm run db:migrate
 ```
 
-### 3️⃣ Environment Variables
-
-Create a `.env` file:
-
-```
-DATABASE_URL=your_database_url
-JWT_SECRET=your_secret_key
-```
-
-### 4️⃣ Run the Development Server
+5. Start development:
 
 ```bash
 npm run dev
 ```
 
-App will run on:
-👉 `http://localhost:3000`
+This will start:
 
----
+- **Server:** http://localhost:4000/graphql (GraphQL Playground)
+- **Client:** http://localhost:3000
 
-## 📌 Current Status
+## Development Scripts
 
-✅ Core ERP modules implemented
-🚧 UI & reporting improvements in progress
-🚀 Designed for future scalability
+| Script                | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `npm run dev`         | Start both client and server in development mode |
+| `npm run dev:server`  | Start only the server                            |
+| `npm run dev:client`  | Start only the client                            |
+| `npm run build`       | Build both client and server                     |
+| `npm run db:generate` | Generate Prisma client                           |
+| `npm run db:migrate`  | Run database migrations                          |
+| `npm run db:push`     | Push schema changes to database                  |
+| `npm run db:studio`   | Open Prisma Studio                               |
 
----
+## Features
 
-## 🔮 Future Enhancements
+- **Inventory Management** - Product and category CRUD operations
+- **Sales & POS** - Point of sale with automatic stock deduction
+- **Purchase Management** - Track purchases and vendor payments
+- **Customer & Vendor Management** - Manage business relationships
+- **Accounting** - Track accounts and transactions
+- **Dashboard** - Real-time business statistics
+- **Reports** - Sales, purchase, and inventory reports
 
-- GraphQL Subscriptions (real-time updates)
-- Export reports (PDF / Excel)
-- Multi-warehouse inventory
-- Audit logs
-- Multi-tenant SaaS support
+## API Documentation
 
----
+Access the GraphQL Playground at `http://localhost:4000/graphql` to explore the API.
 
-## 🎯 Project Goal
+### Available Queries
 
-Flow-ERP is a **portfolio-grade project** built to demonstrate:
+- `me` - Current user info
+- `users` - List users (Admin only)
+- `products` - List products with filtering
+- `categories` - List categories
+- `customers` - List customers
+- `vendors` - List vendors
+- `sales` - List sales
+- `purchases` - List purchases
+- `accounts` - List accounts
+- `dashboardStats` - Dashboard statistics
 
-- Real-world ERP business logic
-- GraphQL-first API design
-- Full-stack development with Next.js
-- Scalable and maintainable architecture
+### Available Mutations
 
----
+- `login` / `register` - Authentication
+- CRUD operations for products, categories, customers, vendors
+- `createSale` / `createPurchase` - Create transactions
+- `createTransaction` - Create accounting entries
 
-## 📜 License
+## License
 
-This project is for **learning and portfolio purposes**.
-
----
-
-### ⭐ If you like this project, give it a star!
+Private - All rights reserved

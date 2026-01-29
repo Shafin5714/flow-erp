@@ -52,7 +52,7 @@ model Customer {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   sales        Sale[]
-  transactions Transaction[]
+  transactions AccountTransaction[]
 }
 
 model Vendor {
@@ -65,7 +65,7 @@ model Vendor {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   purchases    Purchase[]
-  transactions Transaction[]
+  transactions AccountTransaction[]
 }
 
 model Sale {
@@ -128,10 +128,10 @@ model Account {
   balance      Float         @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  transactions Transaction[]
+  transactions AccountTransaction[]
 }
 
-model Transaction {
+model AccountTransaction {
   id          String          @id @default(cuid())
   accountId   String
   type        TransactionType
@@ -144,6 +144,8 @@ model Transaction {
   account     Account         @relation(fields: [accountId], references: [id])
   customer    Customer?       @relation(fields: [customerId], references: [id])
   vendor      Vendor?         @relation(fields: [vendorId], references: [id])
+
+  @@map("Transaction")
 }
 
 enum Role {

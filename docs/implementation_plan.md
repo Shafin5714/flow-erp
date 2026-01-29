@@ -1,12 +1,15 @@
 # Flow-ERP Implementation Plan
 
-A comprehensive implementation plan for the Flow-ERP Mini ERP System using Next.js & GraphQL.
+A comprehensive implementation plan for the Flow-ERP Mini ERP System with **separate Client and Server architecture**.
 
 ---
 
 ## 1. Project Overview
 
-**Flow-ERP** is a modern, full-stack Mini ERP application designed to manage core business operations including Inventory, Sales, Purchases, Accounting, Customers, Vendors, and Reporting. Built with Next.js (App Router) and GraphQL API.
+**Flow-ERP** is a modern, full-stack Mini ERP application designed to manage core business operations including Inventory, Sales, Purchases, Accounting, Customers, Vendors, and Reporting.
+
+> [!IMPORTANT]
+> **Architecture Change**: This project uses a separated client/server architecture with Express + Apollo Server for the backend and Next.js for the frontend. Both run as independent applications and communicate via GraphQL.
 
 ---
 
@@ -15,14 +18,104 @@ A comprehensive implementation plan for the Flow-ERP Mini ERP System using Next.
 | Layer    | Technology                                                          |
 | -------- | ------------------------------------------------------------------- |
 | Frontend | Next.js (App Router), React, Tailwind CSS, shadcn/ui, Apollo Client |
-| Backend  | GraphQL (Apollo Server / GraphQL Yoga), Next.js API Routes          |
+| Backend  | Express.js, Apollo Server, GraphQL                                  |
 | Database | PostgreSQL with Prisma ORM                                          |
 | Storage  | Cloudinary                                                          |
 | Auth     | JWT / Session-based Authentication                                  |
+| Monorepo | Root-level workspace with `/client` and `/server` directories       |
 
 ---
 
-## 3. Implementation Phases
+## 3. Project Structure
+
+```
+flow-erp/
+├── client/                        # Next.js frontend application
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   ├── (dashboard)/
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx           # Dashboard home
+│   │   │   ├── inventory/
+│   │   │   ├── sales/
+│   │   │   ├── purchases/
+│   │   │   ├── customers/
+│   │   │   ├── vendors/
+│   │   │   ├── accounts/
+│   │   │   └── reports/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── ui/                    # shadcn/ui components
+│   │   ├── layout/
+│   │   ├── auth/
+│   │   ├── dashboard/
+│   │   ├── inventory/
+│   │   ├── sales/
+│   │   ├── purchases/
+│   │   └── reports/
+│   ├── lib/
+│   │   ├── apollo-client.ts       # Apollo Client setup
+│   │   └── utils.ts
+│   ├── hooks/
+│   ├── types/
+│   ├── public/
+│   ├── next.config.ts
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── server/                        # Express + GraphQL backend
+│   ├── src/
+│   │   ├── index.ts               # Express server entry point
+│   │   ├── graphql/
+│   │   │   ├── schema/
+│   │   │   │   ├── typeDefs/
+│   │   │   │   │   ├── user.graphql
+│   │   │   │   │   ├── product.graphql
+│   │   │   │   │   ├── sale.graphql
+│   │   │   │   │   ├── purchase.graphql
+│   │   │   │   │   ├── customer.graphql
+│   │   │   │   │   ├── vendor.graphql
+│   │   │   │   │   ├── account.graphql
+│   │   │   │   │   └── index.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── resolvers/
+│   │   │   │   ├── user.resolver.ts
+│   │   │   │   ├── product.resolver.ts
+│   │   │   │   ├── sale.resolver.ts
+│   │   │   │   ├── purchase.resolver.ts
+│   │   │   │   ├── customer.resolver.ts
+│   │   │   │   ├── vendor.resolver.ts
+│   │   │   │   ├── account.resolver.ts
+│   │   │   │   ├── dashboard.resolver.ts
+│   │   │   │   └── index.ts
+│   │   │   └── context.ts
+│   │   ├── middleware/
+│   │   │   ├── auth.ts            # JWT authentication
+│   │   │   └── cors.ts
+│   │   ├── lib/
+│   │   │   ├── db.ts              # Prisma client
+│   │   │   └── auth.ts            # Auth utilities
+│   │   └── utils/
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── seed.ts
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── docs/
+│   └── implementation_plan.md
+├── .env.example
+├── .gitignore
+├── package.json                   # Root package.json for workspace scripts
+└── README.md
+```
+
+---
+
+## 4. Implementation Phases
 
 ### Phase 1: Project Foundation & Setup
 
@@ -41,17 +134,18 @@ A comprehensive implementation plan for the Flow-ERP Mini ERP System using Next.
 - [x] Configure database connection (Verified with Neon)
 - [x] Create initial migrations
 
-#### 1.3 GraphQL API Foundation
+#### 1.3 Client/Server Separation
 
-- [ ] Setup Apollo Server
-- [ ] Create API route handler (`/api/graphql`)
-- [ ] Configure Apollo Client for frontend
-- [ ] Setup GraphQL Code Generator (optional)
+- [ ] Create `/client` folder and move Next.js code
+- [ ] Create `/server` folder with Express setup
+- [ ] Setup Apollo Server on Express
+- [ ] Configure Apollo Client in Next.js frontend
+- [ ] Setup CORS for cross-origin API requests
 
 #### 1.4 Storage Setup (Cloudinary)
 
 - [ ] Create Cloudinary account
-- [ ] Install Cloudinary SDK
+- [ ] Install Cloudinary SDK in server
 - [ ] Configure environment variables
 - [ ] Create image upload utility function
 
@@ -184,14 +278,14 @@ type Transaction {
 
 #### 3.2 Database Models (Prisma)
 
-- [ ] Create User model
-- [ ] Create Product model
-- [ ] Create Category model
-- [ ] Create Customer model
-- [ ] Create Vendor model
-- [ ] Create Sale & SaleItem models
-- [ ] Create Purchase & PurchaseItem models
-- [ ] Create Account & Transaction models
+- [x] Create User model
+- [x] Create Product model
+- [x] Create Category model
+- [x] Create Customer model
+- [x] Create Vendor model
+- [x] Create Sale & SaleItem models
+- [x] Create Purchase & PurchaseItem models
+- [x] Create Account & Transaction models
 
 ---
 
@@ -343,105 +437,110 @@ query DashboardData($startDate: DateTime!, $endDate: DateTime!) {
 
 ---
 
-## 4. Project Structure
+## 5. Server Setup Details
 
+### Express + Apollo Server Configuration
+
+The server will be set up with the following structure:
+
+```typescript
+// server/src/index.ts
+import express from "express";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import cors from "cors";
+import { typeDefs } from "./graphql/schema";
+import { resolvers } from "./graphql/resolvers";
+import { createContext } from "./graphql/context";
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+await server.start();
+
+app.use(
+  "/graphql",
+  cors({ origin: process.env.CLIENT_URL || "http://localhost:3000" }),
+  express.json(),
+  expressMiddleware(server, { context: createContext })
+);
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
+});
 ```
-flow-erp/
-├── app/
-│   ├── (auth)/
-│   │   ├── login/
-│   │   └── register/
-│   ├── (dashboard)/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx              # Dashboard home
-│   │   ├── inventory/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx
-│   │   ├── sales/
-│   │   │   ├── page.tsx          # Sales history
-│   │   │   └── pos/page.tsx      # POS interface
-│   │   ├── purchases/
-│   │   ├── customers/
-│   │   ├── vendors/
-│   │   ├── accounts/
-│   │   └── reports/
-│   ├── api/
-│   │   └── graphql/
-│   │       └── route.ts
-│   ├── layout.tsx
-│   └── page.tsx
-│
-├── components/
-│   ├── ui/                       # shadcn/ui components
-│   ├── layout/
-│   │   ├── Sidebar.tsx
-│   │   ├── Header.tsx
-│   │   └── Footer.tsx
-│   ├── auth/
-│   ├── dashboard/
-│   ├── inventory/
-│   ├── sales/
-│   ├── purchases/
-│   └── reports/
-│
-├── graphql/
-│   ├── schema/
-│   │   ├── user.graphql
-│   │   ├── product.graphql
-│   │   ├── sale.graphql
-│   │   ├── purchase.graphql
-│   │   ├── customer.graphql
-│   │   ├── vendor.graphql
-│   │   ├── account.graphql
-│   │   └── index.ts
-│   ├── resolvers/
-│   │   ├── user.resolver.ts
-│   │   ├── product.resolver.ts
-│   │   ├── sale.resolver.ts
-│   │   ├── purchase.resolver.ts
-│   │   ├── customer.resolver.ts
-│   │   ├── vendor.resolver.ts
-│   │   ├── account.resolver.ts
-│   │   ├── dashboard.resolver.ts
-│   │   └── index.ts
-│   └── context.ts
-│
-├── lib/
-│   ├── db.ts                     # Database connection
-│   ├── auth.ts                   # Auth utilities
-│   ├── apollo-client.ts          # Apollo Client setup
-│   └── utils.ts
-│
-├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
-│
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useProducts.ts
-│   └── ...
-│
-├── types/
-│   └── index.ts
-│
-├── docs/
-│   └── implementation_plan.md
-│
-├── .env
-├── .env.example
-├── next.config.js
-├── tailwind.config.js
-├── tsconfig.json
-└── package.json
+
+### Server Dependencies
+
+```json
+{
+  "dependencies": {
+    "@apollo/server": "^4.x",
+    "@graphql-tools/merge": "^9.x",
+    "@prisma/client": "^7.x",
+    "bcryptjs": "^2.x",
+    "cors": "^2.x",
+    "express": "^4.x",
+    "graphql": "^16.x",
+    "graphql-tag": "^2.x",
+    "jsonwebtoken": "^9.x"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.x",
+    "@types/cors": "^2.x",
+    "@types/express": "^4.x",
+    "@types/jsonwebtoken": "^9.x",
+    "@types/node": "^20.x",
+    "prisma": "^7.x",
+    "tsx": "^4.x",
+    "typescript": "^5.x"
+  }
+}
 ```
 
 ---
 
-## 5. Implementation Timeline
+## 6. Client Setup Details
+
+### Apollo Client Configuration
+
+```typescript
+// client/lib/apollo-client.ts
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+
+const httpLink = createHttpLink({
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:4000/graphql",
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+});
+
+export const apolloClient = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+```
+
+---
+
+## 7. Implementation Timeline
 
 | Phase     | Description                       | Estimated Duration |
 | --------- | --------------------------------- | ------------------ |
-| Phase 1   | Project Foundation & Setup        | 1-2 days           |
+| Phase 1   | Project Foundation & Setup        | 2-3 days           |
 | Phase 2   | Authentication & Authorization    | 2-3 days           |
 | Phase 3   | Core Data Models & GraphQL Schema | 2-3 days           |
 | Phase 4.1 | Dashboard Module                  | 2-3 days           |
@@ -451,13 +550,13 @@ flow-erp/
 | Phase 4.5 | Customer & Vendor Management      | 2-3 days           |
 | Phase 4.6 | Accounting Module                 | 3-4 days           |
 | Phase 4.7 | Reports & Analytics               | 3-4 days           |
-| **Total** |                                   | **~24-34 days**    |
+| **Total** |                                   | **~26-37 days**    |
 
 ---
 
-## 6. Development Guidelines
+## 8. Development Guidelines
 
-### 6.1 Code Standards
+### 8.1 Code Standards
 
 - Use TypeScript for type safety
 - Follow ESLint + Prettier configurations
@@ -465,7 +564,7 @@ flow-erp/
 - Write comprehensive comments for complex logic
 - Create reusable components
 
-### 6.2 GraphQL Best Practices
+### 8.2 GraphQL Best Practices
 
 - Use DataLoader for N+1 query prevention
 - Implement proper error handling
@@ -473,7 +572,7 @@ flow-erp/
 - Use input types for mutations
 - Validate inputs at resolver level
 
-### 6.3 Security Considerations
+### 8.3 Security Considerations
 
 - Hash passwords using bcrypt
 - Validate JWT tokens on each request
@@ -481,7 +580,7 @@ flow-erp/
 - Sanitize user inputs
 - Use HTTPS in production
 
-### 6.4 Testing Strategy
+### 8.4 Testing Strategy
 
 - Unit tests for utility functions
 - Integration tests for GraphQL resolvers
@@ -490,7 +589,7 @@ flow-erp/
 
 ---
 
-## 7. API Endpoints Summary
+## 9. API Endpoints Summary
 
 ### Queries
 
@@ -527,52 +626,9 @@ flow-erp/
 
 ---
 
-## 8. Dependencies
+## 10. Environment Variables
 
-### Core Dependencies
-
-```json
-{
-  "next": "^14.x",
-  "react": "^18.x",
-  "typescript": "^5.x",
-  "@apollo/client": "^3.x",
-  "@apollo/server": "^4.x",
-  "graphql": "^16.x",
-  "@prisma/client": "^5.x",
-  "bcryptjs": "^2.x",
-  "jsonwebtoken": "^9.x",
-  "cloudinary": "^2.x"
-}
-```
-
-### UI Dependencies
-
-```json
-{
-  "tailwindcss": "^3.x",
-  "@radix-ui/react-*": "latest",
-  "class-variance-authority": "^0.7.x",
-  "clsx": "^2.x",
-  "lucide-react": "latest"
-}
-```
-
-### Dev Dependencies
-
-```json
-{
-  "prisma": "^5.x",
-  "eslint": "^8.x",
-  "prettier": "^3.x",
-  "@types/node": "^20.x",
-  "@types/react": "^18.x"
-}
-```
-
----
-
-## 9. Environment Variables
+### Server (.env)
 
 ```env
 # Database
@@ -582,8 +638,9 @@ DATABASE_URL=postgresql://user:password@localhost:5432/flow_erp
 JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRES_IN=7d
 
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Server Config
+PORT=4000
+CLIENT_URL=http://localhost:3000
 NODE_ENV=development
 
 # Cloudinary
@@ -592,56 +649,111 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
+### Client (.env.local)
+
+```env
+# GraphQL Server
+NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
 ---
 
-## 10. Getting Started
+## 11. Getting Started
 
-### Step 1: Create Next.js App
-
-```bash
-npx create-next-app@latest flow-erp --typescript --tailwind --eslint --app --src-dir=false
-cd flow-erp
-```
-
-### Step 2: Install Dependencies
+### Step 1: Setup Server
 
 ```bash
-# GraphQL
-npm install @apollo/client @apollo/server graphql graphql-tag
-
-# Database
-npm install @prisma/client
-npm install -D prisma
-
-# Auth
-npm install bcryptjs jsonwebtoken
-npm install -D @types/bcryptjs @types/jsonwebtoken
-
-# UI
-npx shadcn-ui@latest init
-```
-
-### Step 3: Initialize Prisma
-
-```bash
-npx prisma init
-```
-
-### Step 4: Setup Database Schema & Migrate
-
-```bash
-npx prisma migrate dev --name init
-```
-
-### Step 5: Start Development
-
-```bash
+cd server
+npm install
+npx prisma generate
+npx prisma migrate dev
 npm run dev
 ```
 
+### Step 2: Setup Client
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### Step 3: Access Applications
+
+- **Client:** http://localhost:3000
+- **Server GraphQL Playground:** http://localhost:4000/graphql
+
 ---
 
-## 11. Success Criteria
+## 12. Proposed Changes for Refactoring
+
+### Server Folder (`/server`)
+
+| Action | Path                                  | Description                         |
+| ------ | ------------------------------------- | ----------------------------------- |
+| [NEW]  | server/package.json                   | Server dependencies                 |
+| [NEW]  | server/tsconfig.json                  | TypeScript configuration            |
+| [NEW]  | server/src/index.ts                   | Express + Apollo Server entry point |
+| [NEW]  | server/src/graphql/context.ts         | GraphQL context with Prisma & auth  |
+| [NEW]  | server/src/graphql/schema/index.ts    | Merged type definitions             |
+| [NEW]  | server/src/graphql/resolvers/index.ts | Merged resolvers                    |
+| [MOVE] | server/prisma/                        | Move Prisma config from root        |
+| [NEW]  | server/src/lib/db.ts                  | Prisma client singleton             |
+| [NEW]  | server/src/middleware/auth.ts         | JWT authentication middleware       |
+
+### Client Folder (`/client`)
+
+| Action | Path                         | Description                    |
+| ------ | ---------------------------- | ------------------------------ |
+| [MOVE] | client/app/                  | Move from root `/app`          |
+| [MOVE] | client/components/           | Move from root `/components`   |
+| [MOVE] | client/lib/utils.ts          | Move from root `/lib/utils.ts` |
+| [NEW]  | client/lib/apollo-client.ts  | Apollo Client configuration    |
+| [MOVE] | client/public/               | Move from root `/public`       |
+| [NEW]  | client/package.json          | Client-specific dependencies   |
+| [MOVE] | client/next.config.ts        | Move from root                 |
+| [MOVE] | client/tsconfig.json         | Move from root                 |
+| [MOVE] | client/tailwind config files | Move styling configs           |
+
+### Root Level Changes
+
+| Action   | Path             | Description                                 |
+| -------- | ---------------- | ------------------------------------------- |
+| [MODIFY] | package.json     | Update to workspace root configuration      |
+| [DELETE] | app/api/graphql/ | Remove Next.js API routes (moved to server) |
+
+---
+
+## 13. Verification Plan
+
+### Automated Tests
+
+1. **Server Health Check:**
+
+   ```bash
+   cd server && npm run dev
+   # Server should start on http://localhost:4000/graphql
+   ```
+
+2. **Client Connection Test:**
+   ```bash
+   cd client && npm run dev
+   # Client should start on http://localhost:3000
+   # Verify GraphQL connection in browser console
+   ```
+
+### Manual Verification
+
+1. Open http://localhost:4000/graphql in browser - Apollo Server playground should load
+2. Open http://localhost:3000 - Next.js client should load without errors
+3. Check browser console for any GraphQL connection errors
+
+---
+
+## 14. Success Criteria
 
 - [ ] All core modules functional
 - [ ] GraphQL API properly secured with RBAC
@@ -651,10 +763,12 @@ npm run dev
 - [ ] Reports display accurate data
 - [ ] Responsive UI across devices
 - [ ] Clean, maintainable codebase
+- [ ] **Server runs independently on Express**
+- [ ] **Client connects to server via Apollo Client**
 
 ---
 
-## 12. Out of Scope (Phase 1)
+## 15. Out of Scope (Phase 1)
 
 - Mobile application
 - Multi-branch support

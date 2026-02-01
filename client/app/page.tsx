@@ -16,7 +16,7 @@ export default function Home() {
             height={24}
             priority
           />
-          <span className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-neutral-900 to-neutral-500 dark:from-neutral-100 dark:to-neutral-500">
+          <span className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-blue-600">
             Flow-ERP
           </span>
         </div>

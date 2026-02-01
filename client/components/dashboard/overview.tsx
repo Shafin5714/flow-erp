@@ -47,6 +47,12 @@ export function Overview() {
       <CardContent className="pl-0">
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+            <defs>
+              <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#0d7ff2" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#0d7ff2" stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
@@ -110,10 +116,10 @@ export function Overview() {
               type="monotone"
               dataKey="sales"
               name="Sales Volume"
-              stroke="#3b82f6"
+              stroke="#0d7ff2"
               strokeWidth={4}
               dot={false}
-              activeDot={{ r: 6, fill: "#3b82f6", strokeWidth: 2, stroke: "#fff" }}
+              activeDot={{ r: 6, fill: "#0d7ff2", strokeWidth: 2, stroke: "#fff" }}
             />
           </LineChart>
         </ResponsiveContainer>

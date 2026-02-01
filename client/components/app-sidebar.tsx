@@ -69,11 +69,21 @@ export function AppSidebar({ className, isCollapsed, setIsCollapsed }: SidebarPr
               isCollapsed ? "justify-center px-0" : "gap-2"
             )}
           >
-            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 shadow-lg shadow-neutral-500/20 shrink-0">
-              <div className="w-3 h-3 bg-white dark:bg-black rounded-sm transform rotate-45" />
+            <div className="flex items-center justify-center h-8 w-8 text-primary shrink-0">
+              <svg
+                className="w-full h-full"
+                fill="none"
+                viewBox="0 0 48 48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
             </div>
             {!isCollapsed && (
-              <h2 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 whitespace-nowrap overflow-hidden">
+              <h2 className="text-xl font-bold tracking-tight text-primary whitespace-nowrap overflow-hidden">
                 Flow-ERP
               </h2>
             )}
@@ -145,12 +155,20 @@ export function MobileSidebar() {
       <SheetContent side="left" className="pr-0">
         <div className="px-3 py-2">
           <div className="flex items-center gap-2 px-4 mb-6">
-            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 shadow-lg shadow-neutral-500/20">
-              <div className="w-3 h-3 bg-white dark:bg-black rounded-sm transform rotate-45" />
+            <div className="flex items-center justify-center h-8 w-8 text-primary">
+              <svg
+                className="w-full h-full"
+                fill="none"
+                viewBox="0 0 48 48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
             </div>
-            <h2 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400">
-              Flow-ERP
-            </h2>
+            <h2 className="text-xl font-bold tracking-tight text-primary">Flow-ERP</h2>
           </div>
           <div className="space-y-1">
             {sidebarNavItems.map((item) => (

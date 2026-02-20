@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Lock, EyeOff, Eye, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Mail, Lock, EyeOff, Eye, Loader2, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useMutation, gql } from "@apollo/client";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,11 +25,34 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+const LOGIN_MUTATION = gql`
+  mutation Login($input: LoginInput!) {
+    login(input: $input) {
+      token
+      user {
+        id
+        name
+        email
+        role
+      }
+    }
+  }
+`;
+
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
+  const [login, { loading: isLoading, error }] = useMutation(LOGIN_MUTATION);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -38,15 +63,22 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
     try {
-      console.log("Login data:", data);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    } catch (error) {
-      console.error("Login failed:", error);
-    } finally {
-      setIsLoading(false);
+      const result = await login({
+        variables: {
+          input: {
+            email: data.email,
+            password: data.password,
+          },
+        },
+      });
+
+      if (result.data?.login?.token) {
+        localStorage.setItem("token", result.data.login.token);
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
     }
   };
 
@@ -124,6 +156,13 @@ export default function LoginPage() {
               Please enter your details to access your dashboard.
             </p>
           </div>
+
+          {error && (
+            <div className="flex items-center gap-2 p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md animate-in fade-in slide-in-from-top-1">
+              <AlertCircle size={16} />
+              <span>{error.message}</span>
+            </div>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-8">

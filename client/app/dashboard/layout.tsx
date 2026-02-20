@@ -1,12 +1,22 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AppSidebar, MobileSidebar } from "@/components/app-sidebar";
 import { MainNav } from "@/components/main-nav";
 import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
+
   const toggleCollapsed = useCallback(() => setIsCollapsed((prev) => !prev), []);
 
   return (

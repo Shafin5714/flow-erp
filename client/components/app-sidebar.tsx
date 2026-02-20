@@ -47,16 +47,16 @@ const sidebarNavItems = [
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed?: boolean;
-  setIsCollapsed?: (collapsed: boolean) => void;
+  toggleCollapsed?: () => void;
 }
 
-export function AppSidebar({ className, isCollapsed, setIsCollapsed }: SidebarProps) {
+export function AppSidebar({ className, isCollapsed, toggleCollapsed }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <div
       className={cn(
-        "relative pb-12 h-screen border-r bg-zinc-50/50 dark:bg-zinc-950/50 backdrop-blur-xl border-zinc-200 dark:border-zinc-800 transition-all duration-300",
+        "relative pb-12 h-screen border-r bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 will-change-[width] transition-[width] duration-200 ease-out",
         isCollapsed ? "w-[80px]" : "w-64",
         className
       )}
@@ -65,7 +65,7 @@ export function AppSidebar({ className, isCollapsed, setIsCollapsed }: SidebarPr
         <div className="px-3 py-2">
           <div
             className={cn(
-              "flex items-center px-4 mb-8 transition-all duration-300",
+              "flex items-center px-4 mb-8",
               isCollapsed ? "justify-center px-0" : "gap-2"
             )}
           >
@@ -94,7 +94,7 @@ export function AppSidebar({ className, isCollapsed, setIsCollapsed }: SidebarPr
                 key={item.href}
                 variant={pathname === item.href ? "secondary" : "ghost"}
                 className={cn(
-                  "w-full transition-all duration-200 group relative",
+                  "w-full group relative",
                   isCollapsed
                     ? "h-10 w-10 p-0 mx-auto mb-2 flex items-center justify-center"
                     : "justify-start px-4",
@@ -110,7 +110,7 @@ export function AppSidebar({ className, isCollapsed, setIsCollapsed }: SidebarPr
                 >
                   <item.icon
                     className={cn(
-                      "shrink-0 transition-all duration-200",
+                      "shrink-0",
                       isCollapsed ? "h-5 w-5 mr-0" : "h-4 w-4 mr-3",
                       pathname === item.href && !isCollapsed
                         ? "text-primary bg-primary/10 rounded-sm p-0.5 w-6 h-6 mr-3"
@@ -126,12 +126,12 @@ export function AppSidebar({ className, isCollapsed, setIsCollapsed }: SidebarPr
       </div>
 
       {/* Collapse Toggle */}
-      {setIsCollapsed && (
+      {toggleCollapsed && (
         <Button
           variant="ghost"
           size="icon"
-          className="absolute -right-3 top-10 h-6 w-6 rounded-full border bg-background shadow-md hidden md:flex"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-11 h-6 w-6 rounded-full border bg-background shadow-md hidden md:flex"
+          onClick={toggleCollapsed}
         >
           {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
         </Button>

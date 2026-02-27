@@ -1,4 +1,3 @@
-import { Request } from "express";
 import { ExpressContextFunctionArgument } from "@apollo/server/express4";
 import { BaseContext } from "@apollo/server";
 import prisma from "../lib/db.js";
@@ -27,7 +26,7 @@ export async function createContext({ req }: ExpressContextFunctionArgument): Pr
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as User;
       user = decoded;
-    } catch (error) {
+    } catch {
       // Invalid token, user remains null
     }
   }

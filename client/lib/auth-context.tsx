@@ -3,7 +3,7 @@
 import {
   createContext,
   useContext,
-  useReducer,
+  useState,
   useEffect,
   useCallback,
   useMemo,
@@ -30,47 +30,6 @@ interface AuthContextValue {
   logout: () => void;
 }
 
-// ─── State & Reducer ─────────────────────────────────────────────────────────
-
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-}
-
-type AuthAction =
-  | { type: "INIT_NO_TOKEN" }
-  | { type: "SET_TOKEN"; token: string }
-  | { type: "LOGIN_SUCCESS"; user: User; token: string }
-  | { type: "AUTH_FAILURE" }
-  | { type: "LOADED" }
-  | { type: "LOGOUT" };
-
-const initialState: AuthState = {
-  user: null,
-  token: null,
-  isLoading: true,
-};
-
-function authReducer(state: AuthState, action: AuthAction): AuthState {
-  switch (action.type) {
-    case "INIT_NO_TOKEN":
-      return { ...state, isLoading: false };
-    case "SET_TOKEN":
-      return { ...state, token: action.token };
-    case "LOGIN_SUCCESS":
-      return { user: action.user, token: action.token, isLoading: false };
-    case "AUTH_FAILURE":
-      return { user: null, token: null, isLoading: false };
-    case "LOADED":
-      return { ...state, isLoading: false };
-    case "LOGOUT":
-      return { user: null, token: null, isLoading: false };
-    default:
-      return state;
-  }
-}
-
 // ─── GraphQL ─────────────────────────────────────────────────────────────────
 
 const ME_QUERY = gql`
@@ -91,45 +50,53 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 // ─── Provider ────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const client = useApolloClient();
   const router = useRouter();
 
   // On mount: read persisted token and validate it via the `me` query
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem("token");
 
-    if (!storedToken) {
-      dispatch({ type: "INIT_NO_TOKEN" });
-      return;
-    }
+      if (!storedToken) {
+        setIsLoading(false);
+        return;
+      }
 
-    dispatch({ type: "SET_TOKEN", token: storedToken });
+      setToken(storedToken);
 
-    client
-      .query({ query: ME_QUERY, fetchPolicy: "network-only" })
-      .then(({ data }) => {
+      try {
+        const { data } = await client.query({
+          query: ME_QUERY,
+          fetchPolicy: "network-only",
+        });
+
         if (data?.me) {
-          dispatch({
-            type: "LOGIN_SUCCESS",
-            user: data.me,
-            token: storedToken,
-          });
+          setUser(data.me);
         } else {
           localStorage.removeItem("token");
-          dispatch({ type: "AUTH_FAILURE" });
+          setToken(null);
         }
-      })
-      .catch(() => {
+      } catch {
         localStorage.removeItem("token");
-        dispatch({ type: "AUTH_FAILURE" });
-      });
+        setToken(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
   }, [client]);
 
   const login = useCallback(
     (newToken: string, newUser: User) => {
       localStorage.setItem("token", newToken);
-      dispatch({ type: "LOGIN_SUCCESS", user: newUser, token: newToken });
+      setToken(newToken);
+      setUser(newUser);
       router.push("/dashboard");
     },
     [router]
@@ -137,21 +104,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
-    dispatch({ type: "LOGOUT" });
+    setToken(null);
+    setUser(null);
     client.clearStore();
     router.push("/login");
   }, [client, router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
-      user: state.user,
-      token: state.token,
-      isAuthenticated: !!state.token && !!state.user,
-      isLoading: state.isLoading,
+      user,
+      token,
+      isAuthenticated: !!token && !!user,
+      isLoading,
       login,
       logout,
     }),
-    [state, login, logout]
+    [user, token, isLoading, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

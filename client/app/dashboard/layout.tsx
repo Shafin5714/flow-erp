@@ -30,10 +30,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             isCollapsed ? "md:ml-[80px]" : "md:ml-64"
           )}
         >
-          <header className="flex h-12 items-center border-b px-4 lg:px-6 bg-background py-7">
+          <header className="flex h-16 items-center border-b px-6 lg:px-5 bg-background gap-2 md:gap-4">
             <MobileSidebar />
-            <div className="ml-auto w-full flex items-center justify-end">
-              <MainNav />
+            <div className="w-full flex items-center">
+              <MainNav toggleSidebar={toggleCollapsed} className="w-full" />
             </div>
           </header>
           <main className="flex-1 p-4 space-y-4">{children}</main>

@@ -15,7 +15,10 @@
     "db:push": "cd server && npm run db:push",
     "db:studio": "cd server && npm run db:studio",
     "db:seed": "cd server && npm run db:seed",
-    "lint": "cd client && npm run lint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
     "prepare": "husky"
   },
   "devDependencies": {

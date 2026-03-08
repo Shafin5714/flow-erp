@@ -39,3 +39,21 @@ export const CREATE_PRODUCT = gql`
     }
   }
 `;
+
+export const CREATE_CATEGORY = gql`
+  mutation CreateCategory($input: CreateCategoryInput!) {
+    createCategory(input: $input) {
+      id
+      name
+    }
+  }
+`;
+
+export const DELETE_CATEGORY = gql`
+  mutation DeleteCategory($id: ID!) {
+    deleteCategory(id: $id) {
+      id
+      name
+    }
+  }
+`;

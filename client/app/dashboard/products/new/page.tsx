@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm, useWatch, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CREATE_PRODUCT, GET_CATEGORIES, GET_PRODUCTS } from "@/lib/graphql/products";
+import {
+  CREATE_PRODUCT,
+  GET_CATEGORIES,
+  GET_PRODUCTS,
+  CREATE_CATEGORY,
+} from "@/lib/graphql/products";
 import { Category, Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +32,10 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ChevronLeft, Package, Save, Loader2 } from "lucide-react";
+import { ChevronLeft, Package, Save, Loader2, Plus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Link from "next/link";
+import { useState } from "react";
 
 const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -73,6 +80,8 @@ const units = ["PCS", "KG", "LITER", "BOX", "PACK", "METER"];
 
 export default function NewProductPage() {
   const router = useRouter();
+  const [newCatName, setNewCatName] = useState("");
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const { data: catData, loading: catLoading } = useQuery<{ categories: Category[] }>(
     GET_CATEGORIES
@@ -91,6 +100,22 @@ export default function NewProductPage() {
       toast.error(error.message || "Failed to create product");
     },
     refetchQueries: [{ query: GET_PRODUCTS }],
+  });
+
+  const [createCategory, { loading: catCreating }] = useMutation<
+    { createCategory: Category },
+    { input: { name: string } }
+  >(CREATE_CATEGORY, {
+    onCompleted: (data) => {
+      toast.success("Category created successfully");
+      form.setValue("categoryId", data.createCategory.id);
+      setNewCatName("");
+      setPopoverOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create category");
+    },
+    refetchQueries: [{ query: GET_CATEGORIES }],
   });
 
   const form = useForm<ProductFormValues>({
@@ -200,22 +225,69 @@ export default function NewProductPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={catLoading ? "Loading..." : "Select category"}
-                              />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((category: Category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="flex-1">
+                                <SelectValue
+                                  placeholder={catLoading ? "Loading..." : "Select category"}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories.map((category: Category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="shrink-0"
+                                type="button"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80" align="end">
+                              <div className="grid gap-4">
+                                <div className="space-y-2">
+                                  <h4 className="font-medium leading-none">New Category</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    Add a new category to organize your products.
+                                  </p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Input
+                                    placeholder="Category Name"
+                                    value={newCatName}
+                                    onChange={(e) => setNewCatName(e.target.value)}
+                                    className="h-9"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    className="h-9"
+                                    disabled={catCreating || !newCatName.trim()}
+                                    onClick={() =>
+                                      createCategory({ variables: { input: { name: newCatName } } })
+                                    }
+                                  >
+                                    {catCreating ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      "Add"
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}

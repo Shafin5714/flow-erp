@@ -47,6 +47,7 @@ const mainNavItems: NavItem[] = [
     icon: Package,
     items: [
       { title: "All Products", href: "/dashboard/products" },
+      { title: "Add Product", href: "/dashboard/products/new" },
       { title: "Categories", href: "/dashboard/products/categories" },
     ],
   },

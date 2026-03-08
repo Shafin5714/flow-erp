@@ -4,6 +4,8 @@ import "./globals.css";
 import { ApolloProvider } from "@/lib/apollo-client";
 import { AuthProvider } from "@/lib/auth-context";
 
+import { Toaster } from "@/components/ui/sonner";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,6 +33,7 @@ export default function RootLayout({
         <ApolloProvider>
           <AuthProvider>{children}</AuthProvider>
         </ApolloProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

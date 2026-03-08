@@ -23,7 +23,7 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Products</h1>
           <p className="text-muted-foreground">Manage your inventory and product listings.</p>
         </div>
-        <Link href="/dashboard/products/new">
+        <Link href="/products/new">
           <Button size="lg" className="rounded-full shadow-md">
             <Plus className="mr-2 h-5 w-5" /> Add Product
           </Button>
@@ -79,7 +79,7 @@ export default function ProductsPage() {
                   Get started by adding your first product to the inventory.
                 </p>
               </div>
-              <Link href="/dashboard/products/new">
+              <Link href="/products/new">
                 <Button variant="outline">Add First Product</Button>
               </Link>
             </div>

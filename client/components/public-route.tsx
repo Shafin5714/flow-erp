@@ -7,11 +7,11 @@ import { useAuth } from "@/lib/auth-context";
 
 interface PublicRouteProps {
   children: React.ReactNode;
-  /** Where to redirect authenticated users (default: /dashboard) */
+  /** Where to redirect authenticated users (default: /) */
   redirectTo?: string;
 }
 
-export function PublicRoute({ children, redirectTo = "/dashboard" }: PublicRouteProps) {
+export function PublicRoute({ children, redirectTo = "/" }: PublicRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 

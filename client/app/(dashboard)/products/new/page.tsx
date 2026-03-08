@@ -94,7 +94,7 @@ export default function NewProductPage() {
   >(CREATE_PRODUCT, {
     onCompleted: () => {
       toast.success("Product created successfully");
-      router.push("/dashboard/products");
+      router.push("/products");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create product");
@@ -143,7 +143,7 @@ export default function NewProductPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/products">
+        <Link href="/products">
           <Button variant="ghost" size="icon" className="rounded-full">
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -408,7 +408,7 @@ export default function NewProductPage() {
               </Card>
 
               <div className="flex flex-col gap-2 px-2">
-                <Link href="/dashboard/products" className="w-full">
+                <Link href="/products" className="w-full">
                   <Button variant="outline" className="w-full rounded-full h-11" type="button">
                     Cancel
                   </Button>

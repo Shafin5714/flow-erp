@@ -39,40 +39,40 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   {
     title: "Dashboard",
-    href: "/dashboard",
+    href: "/",
     icon: LayoutDashboard,
   },
   {
     title: "Products",
     icon: Package,
     items: [
-      { title: "All Products", href: "/dashboard/products" },
-      { title: "Add Product", href: "/dashboard/products/new" },
-      { title: "Categories", href: "/dashboard/products/categories" },
+      { title: "All Products", href: "/products" },
+      { title: "Add Product", href: "/products/new" },
+      { title: "Categories", href: "/products/categories" },
     ],
   },
   {
     title: "Orders",
     icon: ShoppingCart,
     items: [
-      { title: "All Orders", href: "/dashboard/orders" },
-      { title: "Returns", href: "/dashboard/orders/returns" },
-      { title: "Order Tracking", href: "/dashboard/orders/tracking" },
+      { title: "All Orders", href: "/orders" },
+      { title: "Returns", href: "/orders/returns" },
+      { title: "Order Tracking", href: "/orders/tracking" },
     ],
   },
   {
     title: "Sales",
-    href: "/dashboard/sales",
+    href: "/sales",
     icon: DollarSign,
   },
   {
     title: "Customers",
-    href: "/dashboard/customers",
+    href: "/customers",
     icon: Users,
   },
   {
     title: "Reports",
-    href: "/dashboard/reports",
+    href: "/reports",
     icon: FileText,
   },
 ];
@@ -80,25 +80,25 @@ const mainNavItems: NavItem[] = [
 const settingsNavItems: NavItem[] = [
   {
     title: "Marketplace Sync",
-    href: "/dashboard/sync",
+    href: "/sync",
     icon: Store,
   },
   {
     title: "Payment Gateways",
-    href: "/dashboard/payments",
+    href: "/payments",
     icon: CreditCard,
   },
   {
     title: "Settings",
     icon: Settings,
     items: [
-      { title: "General", href: "/dashboard/settings" },
-      { title: "Security", href: "/dashboard/settings/security" },
+      { title: "General", href: "/settings" },
+      { title: "Security", href: "/settings/security" },
     ],
   },
   {
     title: "Help Center",
-    href: "/dashboard/help",
+    href: "/help",
     icon: HelpCircle,
   },
 ];

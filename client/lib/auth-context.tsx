@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("token", newToken);
       setToken(newToken);
       setUser(newUser);
-      router.push("/dashboard");
+      router.push("/");
     },
     [router]
   );

@@ -11,6 +11,8 @@ export const GET_PRODUCTS = gql`
       salePrice
       stock
       lowStockThreshold
+      mainImage
+      supportingImages
       category {
         id
         name
@@ -36,6 +38,8 @@ export const CREATE_PRODUCT = gql`
       id
       name
       sku
+      mainImage
+      supportingImages
     }
   }
 `;

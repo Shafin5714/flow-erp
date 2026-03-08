@@ -12,6 +12,8 @@ export interface Product {
   salePrice: number;
   stock: number;
   lowStockThreshold: number;
+  mainImage?: string;
+  supportingImages?: string[];
   category: Category;
   createdAt: string;
   updatedAt: string;

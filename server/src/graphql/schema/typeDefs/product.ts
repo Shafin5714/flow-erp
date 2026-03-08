@@ -11,6 +11,8 @@ export const productTypeDefs = gql`
     salePrice: Float!
     stock: Int!
     lowStockThreshold: Int!
+    mainImage: String
+    supportingImages: [String!]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -24,6 +26,8 @@ export const productTypeDefs = gql`
     salePrice: Float!
     stock: Int
     lowStockThreshold: Int
+    mainImage: String
+    supportingImages: [String!]
   }
 
   input UpdateProductInput {
@@ -35,6 +39,8 @@ export const productTypeDefs = gql`
     salePrice: Float
     stock: Int
     lowStockThreshold: Int
+    mainImage: String
+    supportingImages: [String!]
   }
 
   input ProductFilterInput {

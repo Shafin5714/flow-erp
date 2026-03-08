@@ -35,6 +35,8 @@ model Product {
   salePrice         Float
   stock             Int            @default(0)
   lowStockThreshold Int            @default(10)
+  mainImage         String?
+  supportingImages  String[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   category          Category       @relation(fields: [categoryId], references: [id])

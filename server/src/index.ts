@@ -5,6 +5,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { schema } from "./graphql/schema/index.js";
 import { createContext, Context } from "./graphql/context.js";
+import uploadRoutes from "./routes/upload.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,6 +25,8 @@ async function startServer() {
     })
   );
   app.use(express.json());
+
+  app.use("/api/upload", uploadRoutes);
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });

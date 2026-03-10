@@ -31,6 +31,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
   const { data, loading, error, refetch } = useQuery(GET_PRODUCTS, {
@@ -70,10 +71,8 @@ export default function ProductsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Products
-          </h1>
-          <p className="text-muted-foreground mt-1 text-lg">
+          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+          <p className="text-muted-foreground">
             Manage your inventory and product listings with ease.
           </p>
         </div>
@@ -224,7 +223,13 @@ export default function ProductsPage() {
                       Product
                     </th>
                     <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">
+                      Brand
+                    </th>
+                    <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">
                       Category
+                    </th>
+                    <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">
+                      Status
                     </th>
                     <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">
                       Stock Status
@@ -268,11 +273,32 @@ export default function ProductsPage() {
                               <span className="font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
                                 {product.name}
                               </span>
-                              <span className="text-xs text-muted-foreground font-mono mt-0.5">
-                                {product.sku}
-                              </span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                <span className="text-xs text-muted-foreground font-mono">
+                                  {product.sku}
+                                </span>
+                                {product.tags?.slice(0, 2).map((tag) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="outline"
+                                    className="text-[10px] px-1.5 h-4 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                                {(product.tags?.length || 0) > 2 && (
+                                  <span className="text-[10px] text-muted-foreground">
+                                    +{(product.tags?.length || 0) - 2}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-muted-foreground italic">
+                            {product.brand || "-"}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <Badge
@@ -280,6 +306,19 @@ export default function ProductsPage() {
                             className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none px-3 py-1"
                           >
                             {product.category?.name || "General"}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge
+                            variant={product.isActive ? "default" : "outline"}
+                            className={cn(
+                              "px-3 py-1 border-none",
+                              product.isActive
+                                ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
+                            )}
+                          >
+                            {product.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </td>
                         <td className="px-6 py-4">

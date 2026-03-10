@@ -28,13 +28,26 @@ model Category {
 model Product {
   id                String         @id @default(cuid())
   name              String
+  description       String?        // HTML from Lexical editor
   sku               String         @unique
+  barcode           String?
+  brand             String?
   categoryId        String
   unit              String
+  weight            Float?         // in kg
+  dimensionL        Float?         // length in cm
+  dimensionW        Float?         // width in cm
+  dimensionH        Float?         // height in cm
   costPrice         Float
   salePrice         Float
+  discountPrice     Float?
+  taxRate           Float?         @default(0)
   stock             Int            @default(0)
   lowStockThreshold Int            @default(10)
+  isActive          Boolean        @default(true)
+  expiryDate        DateTime?
+  warrantyPeriod    String?        // e.g. "12 months", "2 years"
+  tags              String[]       // array of tag strings
   mainImage         String?
   supportingImages  String[]
   createdAt         DateTime       @default(now())

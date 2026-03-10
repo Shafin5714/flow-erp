@@ -32,20 +32,51 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ChevronLeft, Package, Save, Loader2, Plus, X, ImagePlus } from "lucide-react";
+import {
+  ChevronLeft,
+  Package,
+  Save,
+  Loader2,
+  Plus,
+  X,
+  ImagePlus,
+  Info,
+  Tag,
+  Ruler,
+  BadgeDollarSign,
+} from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import { BadgeInput } from "@/components/ui/badge-input";
+import { DatePicker } from "@/components/ui/date-picker";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  description: z.string().optional(),
   sku: z.string().min(3, "SKU must be at least 3 characters"),
+  barcode: z.string().optional(),
+  brand: z.string().optional(),
   categoryId: z.string().min(1, "Please select a category"),
   unit: z.string().min(1, "Please select a unit"),
   costPrice: z.number().min(0, "Cost price must be positive"),
   salePrice: z.number().min(0, "Sale price must be positive"),
+  discountPrice: z.number().min(0, "Discount price must be positive").optional(),
+  taxRate: z.number().min(0, "Tax rate must be positive").optional(),
   stock: z.number().int().min(0, "Stock must be a non-negative integer"),
   lowStockThreshold: z.number().int().min(0, "Threshold must be non-negative"),
+  isActive: z.boolean(),
+  expiryDate: z.date().optional(),
+  warrantyPeriod: z.string().optional(),
+  tags: z.array(z.string()),
+  weight: z.number().min(0).optional(),
+  dimensionL: z.number().min(0).optional(),
+  dimensionW: z.number().min(0).optional(),
+  dimensionH: z.number().min(0).optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -54,6 +85,7 @@ function SummaryFields({ control }: { control: Control<ProductFormValues> }) {
   const name = useWatch({ control, name: "name" }) || "Untitled";
   const costPrice = Number(useWatch({ control, name: "costPrice" })) || 0;
   const salePrice = Number(useWatch({ control, name: "salePrice" })) || 0;
+  const isActive = useWatch({ control, name: "isActive" });
 
   const profit = salePrice - costPrice;
   const margin = salePrice > 0 ? (profit / salePrice) * 100 : 0;
@@ -62,7 +94,13 @@ function SummaryFields({ control }: { control: Control<ProductFormValues> }) {
     <>
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">Product</span>
-        <span className="font-medium">{name}</span>
+        <span className="font-medium text-right max-w-[150px] truncate">{name}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">Status</span>
+        <span className={cn("font-medium", isActive ? "text-emerald-600" : "text-amber-600")}>
+          {isActive ? "Active" : "Inactive"}
+        </span>
       </div>
       <div className="flex justify-between text-sm border-t pt-2 border-zinc-200 dark:border-zinc-800">
         <span className="text-muted-foreground">Profit/Unit</span>
@@ -122,13 +160,24 @@ export default function NewProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
+      description: "",
       sku: "",
+      barcode: "",
+      brand: "",
       categoryId: "",
       unit: "PCS",
       costPrice: 0,
       salePrice: 0,
+      discountPrice: 0,
+      taxRate: 0,
       stock: 0,
       lowStockThreshold: 10,
+      isActive: true,
+      tags: [],
+      weight: 0,
+      dimensionL: 0,
+      dimensionW: 0,
+      dimensionH: 0,
     },
   });
 
@@ -182,7 +231,7 @@ export default function NewProductPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/products">
           <Button variant="ghost" size="icon" className="rounded-full">
@@ -199,334 +248,620 @@ export default function NewProductPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-6">
-              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Package className="h-5 w-5 text-primary" />
-                    Basic Information
-                  </CardTitle>
-                  <CardDescription>Enter the primary details of the product.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Product Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Wireless Mouse" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="sku"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>SKU / Barcode</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. WM-001" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="unit"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Unit</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select unit" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {units.map((unit) => (
-                                <SelectItem key={unit} value={unit}>
-                                  {unit}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <div className="flex gap-2">
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="flex-1">
-                                <SelectValue
-                                  placeholder={catLoading ? "Loading..." : "Select category"}
-                                />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categories.map((category: Category) => (
-                                <SelectItem key={category.id} value={category.id}>
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 mb-6">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
+                  <TabsTrigger value="shipping">Shipping & Details</TabsTrigger>
+                  <TabsTrigger value="media">Media</TabsTrigger>
+                </TabsList>
 
-                          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="shrink-0"
-                                type="button"
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-80" align="end">
-                              <div className="grid gap-4">
-                                <div className="space-y-2">
-                                  <h4 className="font-medium leading-none">New Category</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    Add a new category to organize your products.
-                                  </p>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Input
-                                    placeholder="Category Name"
-                                    value={newCatName}
-                                    onChange={(e) => setNewCatName(e.target.value)}
-                                    className="h-9"
-                                  />
+                <TabsContent value="general" className="space-y-6 mt-0">
+                  {/* Basic Information */}
+                  <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Package className="h-5 w-5 text-primary" />
+                        Basic Information
+                      </CardTitle>
+                      <CardDescription>Enter the primary details of the product.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-zinc-50/50 dark:bg-zinc-900/50 mb-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-sm font-medium">Active Status</FormLabel>
+                          <FormDescription className="text-xs">
+                            Visible to customers in the store
+                          </FormDescription>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="isActive"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Product Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Wireless Mouse" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="brand"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Brand / Manufacturer</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Logitech" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="unit"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Unit</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select unit" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {units.map((unit) => (
+                                    <SelectItem key={unit} value={unit}>
+                                      {unit}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="sku"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>SKU</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. WM-001" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="barcode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Barcode (UPC/EAN)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. 123456789012" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="categoryId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <div className="flex gap-2">
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="flex-1">
+                                    <SelectValue
+                                      placeholder={catLoading ? "Loading..." : "Select category"}
+                                    />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {categories.map((category: Category) => (
+                                    <SelectItem key={category.id} value={category.id}>
+                                      {category.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+
+                              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                                <PopoverTrigger asChild>
                                   <Button
-                                    size="sm"
-                                    className="h-9"
-                                    disabled={catCreating || !newCatName.trim()}
-                                    onClick={() =>
-                                      createCategory({ variables: { input: { name: newCatName } } })
-                                    }
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0"
+                                    type="button"
                                   >
-                                    {catCreating ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      "Add"
-                                    )}
+                                    <Plus className="h-4 w-4" />
                                   </Button>
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
-                <CardHeader>
-                  <CardTitle className="text-lg">Pricing & Stock</CardTitle>
-                  <CardDescription>Define how much you buy and sell this for.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="costPrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cost Price ($)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="salePrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sale Price ($)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="stock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Initial Stock</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lowStockThreshold"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Low Stock Alert</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                            />
-                          </FormControl>
-                          <FormDescription>Notify me when stock falls below this.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <ImagePlus className="h-5 w-5 text-primary" />
-                    Product Images
-                  </CardTitle>
-                  <CardDescription>Upload a main image and supporting images.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <FormLabel>Main Image</FormLabel>
-                    <div className="mt-2 flex items-center gap-4">
-                      {mainImagePreview ? (
-                        <div className="relative h-24 w-24 rounded-md border overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={mainImagePreview}
-                            alt="Main Preview"
-                            className="h-full w-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMainImageFile(null);
-                              setMainImagePreview(null);
-                            }}
-                            className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="h-24 w-24 rounded-md border border-dashed flex items-center justify-center bg-muted/50">
-                          <ImagePlus className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        className="flex-1"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setMainImageFile(file);
-                            setMainImagePreview(URL.createObjectURL(file));
-                          }
-                        }}
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80" align="end">
+                                  <div className="grid gap-4">
+                                    <div className="space-y-2">
+                                      <h4 className="font-medium leading-none">New Category</h4>
+                                      <p className="text-sm text-muted-foreground">
+                                        Add a new category to organize your products.
+                                      </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        placeholder="Category Name"
+                                        value={newCatName}
+                                        onChange={(e) => setNewCatName(e.target.value)}
+                                        className="h-9"
+                                      />
+                                      <Button
+                                        size="sm"
+                                        className="h-9"
+                                        disabled={catCreating || !newCatName.trim()}
+                                        onClick={() =>
+                                          createCategory({
+                                            variables: { input: { name: newCatName } },
+                                          })
+                                        }
+                                      >
+                                        {catCreating ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          "Add"
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
-                  <div>
-                    <FormLabel>Supporting Images</FormLabel>
-                    <div className="mt-2 space-y-4">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => {
-                          const files = Array.from(e.target.files || []);
-                          setSupportingImageFiles((prev) => [...prev, ...files]);
-                          const newPreviews = files.map((f) => URL.createObjectURL(f));
-                          setSupportingImagePreviews((prev) => [...prev, ...newPreviews]);
-                        }}
+                  {/* Description */}
+                  <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Info className="h-5 w-5 text-primary" />
+                        Product Description
+                      </CardTitle>
+                      <CardDescription>Give your product a detailed description.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <RichTextEditor value={field.value || ""} onChange={field.onChange} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                      {supportingImagePreviews.length > 0 && (
-                        <div className="flex flex-wrap gap-4">
-                          {supportingImagePreviews.map((preview, index) => (
-                            <div
-                              key={index}
-                              className="relative h-20 w-20 rounded-md border overflow-hidden"
-                            >
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="pricing" className="space-y-6 mt-0">
+                  {/* Pricing & Stock */}
+                  <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BadgeDollarSign className="h-5 w-5 text-primary" />
+                        Pricing & Stock
+                      </CardTitle>
+                      <CardDescription>Configure pricing and inventory settings.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="costPrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cost Price ($)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="salePrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Sale Price ($)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="discountPrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Discount Price ($)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                              <FormDescription>Promotional price</FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="taxRate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Tax Rate (%)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                        <FormField
+                          control={form.control}
+                          name="stock"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Initial Stock</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="lowStockThreshold"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Low Stock Alert</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="shipping" className="space-y-6 mt-0">
+                  {/* Physical Attributes */}
+                  <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Ruler className="h-5 w-5 text-primary" />
+                        Physical Attributes
+                      </CardTitle>
+                      <CardDescription>
+                        Enter weight and dimensions (Shipping info).
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weight (kg)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="dimensionL"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Length (cm)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="dimensionW"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Width (cm)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="dimensionH"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Height (cm)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Additional Details */}
+                  <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Tag className="h-5 w-5 text-primary" />
+                        Additional Details
+                      </CardTitle>
+                      <CardDescription>Set tags, expiry date, and warranty info.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="expiryDate"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel>Expiry Date</FormLabel>
+                              <DatePicker
+                                date={field.value}
+                                setDate={field.onChange}
+                                placeholder="Select expiry date"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="warrantyPeriod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Warranty Period</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. 1 Year" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="tags"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tags</FormLabel>
+                            <FormControl>
+                              <BadgeInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Type a tag and press Enter"
+                              />
+                            </FormControl>
+                            <FormDescription>Press Enter to add multiple tags</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="media" className="space-y-6 mt-0">
+                  {/* Images */}
+                  <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <ImagePlus className="h-5 w-5 text-primary" />
+                        Product Images
+                      </CardTitle>
+                      <CardDescription>Upload a main image and supporting images.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div>
+                        <FormLabel>Main Image</FormLabel>
+                        <div className="mt-2 flex items-center gap-4">
+                          {mainImagePreview ? (
+                            <div className="relative h-24 w-24 rounded-md border overflow-hidden">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={preview}
-                                alt={`Preview ${index}`}
+                                src={mainImagePreview}
+                                alt="Main Preview"
                                 className="h-full w-full object-cover"
                               />
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setSupportingImageFiles((prev) =>
-                                    prev.filter((_, i) => i !== index)
-                                  );
-                                  setSupportingImagePreviews((prev) =>
-                                    prev.filter((_, i) => i !== index)
-                                  );
-
-                                  // Revoke URL to prevent memory leaks
-                                  URL.revokeObjectURL(preview);
+                                  setMainImageFile(null);
+                                  setMainImagePreview(null);
                                 }}
                                 className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
                               >
                                 <X className="h-3 w-3" />
                               </button>
                             </div>
-                          ))}
+                          ) : (
+                            <div className="h-24 w-24 rounded-md border border-dashed flex items-center justify-center bg-muted/50">
+                              <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="flex-1"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setMainImageFile(file);
+                                setMainImagePreview(URL.createObjectURL(file));
+                              }
+                            }}
+                          />
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                      </div>
+
+                      <div>
+                        <FormLabel>Supporting Images</FormLabel>
+                        <div className="mt-2 space-y-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              setSupportingImageFiles((prev) => [...prev, ...files]);
+                              const newPreviews = files.map((f) => URL.createObjectURL(f));
+                              setSupportingImagePreviews((prev) => [...prev, ...newPreviews]);
+                            }}
+                          />
+                          {supportingImagePreviews.length > 0 && (
+                            <div className="flex flex-wrap gap-4">
+                              {supportingImagePreviews.map((preview, index) => (
+                                <div
+                                  key={index}
+                                  className="relative h-20 w-20 rounded-md border overflow-hidden"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={preview}
+                                    alt={`Preview ${index}`}
+                                    className="h-full w-full object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSupportingImageFiles((prev) =>
+                                        prev.filter((_, i) => i !== index)
+                                      );
+                                      setSupportingImagePreviews((prev) =>
+                                        prev.filter((_, i) => i !== index)
+                                      );
+
+                                      // Revoke URL to prevent memory leaks
+                                      URL.revokeObjectURL(preview);
+                                    }}
+                                    className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
 
             <div className="space-y-6">
-              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-primary/5">
+              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-primary/5 sticky top-6">
                 <CardHeader>
                   <CardTitle className="text-base text-primary">Summary</CardTitle>
                 </CardHeader>

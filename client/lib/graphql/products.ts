@@ -5,12 +5,25 @@ export const GET_PRODUCTS = gql`
     products(filter: $filter) {
       id
       name
+      description
       sku
+      barcode
+      brand
       unit
+      weight
+      dimensionL
+      dimensionW
+      dimensionH
       costPrice
       salePrice
+      discountPrice
+      taxRate
       stock
       lowStockThreshold
+      isActive
+      expiryDate
+      warrantyPeriod
+      tags
       mainImage
       supportingImages
       category {

@@ -4,13 +4,26 @@ export const productTypeDefs = gql`
   type Product {
     id: ID!
     name: String!
+    description: String
     sku: String!
+    barcode: String
+    brand: String
     category: Category!
     unit: String!
+    weight: Float
+    dimensionL: Float
+    dimensionW: Float
+    dimensionH: Float
     costPrice: Float!
     salePrice: Float!
+    discountPrice: Float
+    taxRate: Float
     stock: Int!
     lowStockThreshold: Int!
+    isActive: Boolean!
+    expiryDate: DateTime
+    warrantyPeriod: String
+    tags: [String!]!
     mainImage: String
     supportingImages: [String!]!
     createdAt: DateTime!
@@ -19,26 +32,52 @@ export const productTypeDefs = gql`
 
   input CreateProductInput {
     name: String!
+    description: String
     sku: String!
+    barcode: String
+    brand: String
     categoryId: String!
     unit: String!
+    weight: Float
+    dimensionL: Float
+    dimensionW: Float
+    dimensionH: Float
     costPrice: Float!
     salePrice: Float!
+    discountPrice: Float
+    taxRate: Float
     stock: Int
     lowStockThreshold: Int
+    isActive: Boolean
+    expiryDate: DateTime
+    warrantyPeriod: String
+    tags: [String!]
     mainImage: String
     supportingImages: [String!]
   }
 
   input UpdateProductInput {
     name: String
+    description: String
     sku: String
+    barcode: String
+    brand: String
     categoryId: String
     unit: String
+    weight: Float
+    dimensionL: Float
+    dimensionW: Float
+    dimensionH: Float
     costPrice: Float
     salePrice: Float
+    discountPrice: Float
+    taxRate: Float
     stock: Int
     lowStockThreshold: Int
+    isActive: Boolean
+    expiryDate: DateTime
+    warrantyPeriod: String
+    tags: [String!]
     mainImage: String
     supportingImages: [String!]
   }

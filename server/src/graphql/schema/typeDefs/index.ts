@@ -8,3 +8,4 @@ export { saleTypeDefs } from "./sale.js";
 export { purchaseTypeDefs } from "./purchase.js";
 export { accountTypeDefs } from "./account.js";
 export { dashboardTypeDefs } from "./dashboard.js";
+export { brandTypeDefs } from "./brand.js";

@@ -10,6 +10,8 @@ import {
   GET_CATEGORIES,
   GET_PRODUCTS,
   CREATE_CATEGORY,
+  GET_BRANDS,
+  CREATE_BRAND,
 } from "@/lib/graphql/products";
 import { Category, Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -60,7 +62,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   sku: z.string().min(3, "SKU must be at least 3 characters"),
   barcode: z.string().optional(),
-  brand: z.string().optional(),
+  brandId: z.string().optional(),
   categoryId: z.string().min(1, "Please select a category"),
   unit: z.string().min(1, "Please select a unit"),
   costPrice: z.number().min(0, "Cost price must be positive"),
@@ -119,12 +121,18 @@ const units = ["PCS", "KG", "LITER", "BOX", "PACK", "METER"];
 export default function NewProductPage() {
   const router = useRouter();
   const [newCatName, setNewCatName] = useState("");
+  const [newBrandName, setNewBrandName] = useState("");
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [brandPopoverOpen, setBrandPopoverOpen] = useState(false);
 
   const { data: catData, loading: catLoading } = useQuery<{ categories: Category[] }>(
     GET_CATEGORIES
   );
+  const { data: brandData, loading: brandLoading } = useQuery<{
+    brands: { id: string; name: string }[];
+  }>(GET_BRANDS);
   const categories = catData?.categories || [];
+  const brands = brandData?.brands || [];
 
   const [createProduct, { loading: submitting }] = useMutation<
     { createProduct: Product },
@@ -156,6 +164,22 @@ export default function NewProductPage() {
     refetchQueries: [{ query: GET_CATEGORIES }],
   });
 
+  const [createBrand, { loading: brandCreating }] = useMutation<
+    { createBrand: { id: string; name: string } },
+    { input: { name: string } }
+  >(CREATE_BRAND, {
+    onCompleted: (data) => {
+      toast.success("Brand created successfully");
+      form.setValue("brandId", data.createBrand.id);
+      setNewBrandName("");
+      setBrandPopoverOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create brand");
+    },
+    refetchQueries: [{ query: GET_BRANDS }],
+  });
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -163,7 +187,7 @@ export default function NewProductPage() {
       description: "",
       sku: "",
       barcode: "",
-      brand: "",
+      brandId: "",
       categoryId: "",
       unit: "PCS",
       costPrice: 0,
@@ -304,13 +328,75 @@ export default function NewProductPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
-                          name="brand"
+                          name="brandId"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Brand / Manufacturer</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. Logitech" {...field} />
-                              </FormControl>
+                              <div className="flex gap-2">
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="flex-1">
+                                      <SelectValue
+                                        placeholder={brandLoading ? "Loading..." : "Select brand"}
+                                      />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {brands.map((brand: { id: string; name: string }) => (
+                                      <SelectItem key={brand.id} value={brand.id}>
+                                        {brand.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+
+                                <Popover open={brandPopoverOpen} onOpenChange={setBrandPopoverOpen}>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="shrink-0"
+                                      type="button"
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-80" align="end">
+                                    <div className="grid gap-4">
+                                      <div className="space-y-2">
+                                        <h4 className="font-medium leading-none">New Brand</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                          Add a new brand for your products.
+                                        </p>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Input
+                                          placeholder="Brand Name"
+                                          value={newBrandName}
+                                          onChange={(e) => setNewBrandName(e.target.value)}
+                                          className="h-9"
+                                        />
+                                        <Button
+                                          size="sm"
+                                          className="h-9"
+                                          disabled={brandCreating || !newBrandName.trim()}
+                                          onClick={() =>
+                                            createBrand({
+                                              variables: { input: { name: newBrandName } },
+                                            })
+                                          }
+                                        >
+                                          {brandCreating ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            "Add"
+                                          )}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -323,7 +409,7 @@ export default function NewProductPage() {
                               <FormLabel>Unit</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                  <SelectTrigger>
+                                  <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select unit" />
                                   </SelectTrigger>
                                 </FormControl>
@@ -370,81 +456,83 @@ export default function NewProductPage() {
                         />
                       </div>
 
-                      <FormField
-                        control={form.control}
-                        name="categoryId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Category</FormLabel>
-                            <div className="flex gap-2">
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="flex-1">
-                                    <SelectValue
-                                      placeholder={catLoading ? "Loading..." : "Select category"}
-                                    />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {categories.map((category: Category) => (
-                                    <SelectItem key={category.id} value={category.id}>
-                                      {category.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-
-                              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="shrink-0"
-                                    type="button"
-                                  >
-                                    <Plus className="h-4 w-4" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-80" align="end">
-                                  <div className="grid gap-4">
-                                    <div className="space-y-2">
-                                      <h4 className="font-medium leading-none">New Category</h4>
-                                      <p className="text-sm text-muted-foreground">
-                                        Add a new category to organize your products.
-                                      </p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Input
-                                        placeholder="Category Name"
-                                        value={newCatName}
-                                        onChange={(e) => setNewCatName(e.target.value)}
-                                        className="h-9"
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="categoryId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <div className="flex gap-2">
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="flex-1">
+                                      <SelectValue
+                                        placeholder={catLoading ? "Loading..." : "Select category"}
                                       />
-                                      <Button
-                                        size="sm"
-                                        className="h-9"
-                                        disabled={catCreating || !newCatName.trim()}
-                                        onClick={() =>
-                                          createCategory({
-                                            variables: { input: { name: newCatName } },
-                                          })
-                                        }
-                                      >
-                                        {catCreating ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                          "Add"
-                                        )}
-                                      </Button>
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {categories.map((category: Category) => (
+                                      <SelectItem key={category.id} value={category.id}>
+                                        {category.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+
+                                <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="shrink-0"
+                                      type="button"
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-80" align="end">
+                                    <div className="grid gap-4">
+                                      <div className="space-y-2">
+                                        <h4 className="font-medium leading-none">New Category</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                          Add a new category to organize your products.
+                                        </p>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Input
+                                          placeholder="Category Name"
+                                          value={newCatName}
+                                          onChange={(e) => setNewCatName(e.target.value)}
+                                          className="h-9"
+                                        />
+                                        <Button
+                                          size="sm"
+                                          className="h-9"
+                                          disabled={catCreating || !newCatName.trim()}
+                                          onClick={() =>
+                                            createCategory({
+                                              variables: { input: { name: newCatName } },
+                                            })
+                                          }
+                                        >
+                                          {catCreating ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            "Add"
+                                          )}
+                                        </Button>
+                                      </div>
                                     </div>
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -860,8 +948,8 @@ export default function NewProductPage() {
               </Tabs>
             </div>
 
-            <div className="space-y-6">
-              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-primary/5 sticky top-6">
+            <div className="space-y-6 sticky top-6 self-start">
+              <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-primary/5">
                 <CardHeader>
                   <CardTitle className="text-base text-primary">Summary</CardTitle>
                 </CardHeader>

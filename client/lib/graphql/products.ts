@@ -8,7 +8,11 @@ export const GET_PRODUCTS = gql`
       description
       sku
       barcode
-      brand
+      brandId
+      brand {
+        id
+        name
+      }
       unit
       weight
       dimensionL
@@ -78,6 +82,23 @@ export const DELETE_CATEGORY = gql`
 export const DELETE_PRODUCT = gql`
   mutation DeleteProduct($id: ID!) {
     deleteProduct(id: $id) {
+      id
+      name
+    }
+  }
+`;
+export const GET_BRANDS = gql`
+  query GetBrands {
+    brands {
+      id
+      name
+    }
+  }
+`;
+
+export const CREATE_BRAND = gql`
+  mutation CreateBrand($input: CreateBrandInput!) {
+    createBrand(input: $input) {
       id
       name
     }

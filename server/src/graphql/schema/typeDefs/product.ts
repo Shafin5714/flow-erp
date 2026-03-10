@@ -7,7 +7,8 @@ export const productTypeDefs = gql`
     description: String
     sku: String!
     barcode: String
-    brand: String
+    brandId: String
+    brand: Brand
     category: Category!
     unit: String!
     weight: Float
@@ -35,7 +36,7 @@ export const productTypeDefs = gql`
     description: String
     sku: String!
     barcode: String
-    brand: String
+    brandId: String
     categoryId: String!
     unit: String!
     weight: Float
@@ -61,7 +62,7 @@ export const productTypeDefs = gql`
     description: String
     sku: String
     barcode: String
-    brand: String
+    brandId: String
     categoryId: String
     unit: String
     weight: Float

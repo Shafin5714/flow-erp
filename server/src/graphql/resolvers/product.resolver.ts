@@ -11,6 +11,10 @@ export const productResolvers = {
     category: async (parent: { categoryId: string }, _: unknown, { prisma }: Context) => {
       return prisma.category.findUnique({ where: { id: parent.categoryId } });
     },
+    brand: async (parent: { brandId: string | null }, _: unknown, { prisma }: Context) => {
+      if (!parent.brandId) return null;
+      return prisma.brand.findUnique({ where: { id: parent.brandId } });
+    },
   },
   Query: {
     products: async (

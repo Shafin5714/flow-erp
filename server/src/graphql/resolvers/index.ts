@@ -8,3 +8,4 @@ export { saleResolvers } from "./sale.resolver.js";
 export { purchaseResolvers } from "./purchase.resolver.js";
 export { accountResolvers } from "./account.resolver.js";
 export { dashboardResolvers } from "./dashboard.resolver.js";
+export { brandResolvers } from "./brand.resolver.js";

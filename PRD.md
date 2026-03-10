@@ -6,7 +6,7 @@
 
 ## 1. Product Overview
 
-**Flow-ERP** is a modern, web-based **Mini ERP system** designed for small and medium-sized businesses to manage daily operations efficiently.
+**Flow-ERP** is a modern, web-based **ERP system** designed for small and medium-sized businesses to manage daily operations efficiently.
 The system focuses on **Inventory, Sales, Purchases, Accounting, Customers, Vendors, and Reporting**, using **GraphQL** for efficient data fetching and **Next.js** for a scalable full-stack architecture.
 
 Flow-ERP aims to demonstrate real-world ERP workflows, clean architecture, and scalable API design suitable for production-level applications.

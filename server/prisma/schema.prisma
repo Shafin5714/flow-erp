@@ -56,6 +56,7 @@ model Product {
   stock             Int            @default(0)
   lowStockThreshold Int            @default(10)
   isActive          Boolean        @default(true)
+  hasVariants       Boolean        @default(false)
   expiryDate        DateTime?
   warrantyPeriod    String?        // e.g. "12 months", "2 years"
   tags              String[]       // array of tag strings
@@ -65,8 +66,27 @@ model Product {
   updatedAt         DateTime       @updatedAt
   category          Category       @relation(fields: [categoryId], references: [id])
   brand             Brand?         @relation(fields: [brandId], references: [id])
+  variants          ProductVariant[]
   purchaseItems     PurchaseItem[]
   saleItems         SaleItem[]
+}
+
+model ProductVariant {
+  id            String         @id @default(cuid())
+  productId     String
+  name          String         // e.g. "Red / Large"
+  sku           String         @unique
+  barcode       String?
+  costPrice     Float
+  salePrice     Float
+  discountPrice Float?
+  stock         Int            @default(0)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  saleItems     SaleItem[]
+  purchaseItems PurchaseItem[]
 }
 
 model Customer {
@@ -117,11 +137,13 @@ model SaleItem {
   id        String  @id @default(cuid())
   saleId    String
   productId String
+  variantId String?
   quantity  Int
   unitPrice Float
   total     Float
-  product   Product @relation(fields: [productId], references: [id])
-  sale      Sale    @relation(fields: [saleId], references: [id])
+  product   Product         @relation(fields: [productId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+  sale      Sale            @relation(fields: [saleId], references: [id])
 }
 
 model Purchase {
@@ -141,11 +163,13 @@ model PurchaseItem {
   id         String   @id @default(cuid())
   purchaseId String
   productId  String
+  variantId  String?
   quantity   Int
   unitPrice  Float
   total      Float
-  product    Product  @relation(fields: [productId], references: [id])
-  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+  product    Product         @relation(fields: [productId], references: [id])
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
+  purchase   Purchase        @relation(fields: [purchaseId], references: [id])
 }
 
 model Account {

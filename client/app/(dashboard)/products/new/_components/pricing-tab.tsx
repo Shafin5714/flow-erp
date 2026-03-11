@@ -1,6 +1,6 @@
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, useWatch } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
@@ -19,6 +19,27 @@ interface PricingTabProps {
 }
 
 export function PricingTab({ form }: PricingTabProps) {
+  const hasVariants = useWatch({
+    control: form.control,
+    name: "hasVariants",
+  });
+
+  if (hasVariants) {
+    return (
+      <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <BadgeDollarSign className="h-5 w-5 text-primary" />
+            Pricing & Stock
+          </CardTitle>
+          <CardDescription>
+            Pricing and stock are currently managed individually per-variant on the Variants tab.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">

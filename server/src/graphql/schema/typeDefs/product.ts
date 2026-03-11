@@ -22,6 +22,8 @@ export const productTypeDefs = gql`
     stock: Int!
     lowStockThreshold: Int!
     isActive: Boolean!
+    hasVariants: Boolean!
+    variants: [ProductVariant!]!
     expiryDate: DateTime
     warrantyPeriod: String
     tags: [String!]!
@@ -50,6 +52,8 @@ export const productTypeDefs = gql`
     stock: Int
     lowStockThreshold: Int
     isActive: Boolean
+    hasVariants: Boolean
+    variants: [CreateVariantInput!]
     expiryDate: DateTime
     warrantyPeriod: String
     tags: [String!]
@@ -76,6 +80,7 @@ export const productTypeDefs = gql`
     stock: Int
     lowStockThreshold: Int
     isActive: Boolean
+    hasVariants: Boolean
     expiryDate: DateTime
     warrantyPeriod: String
     tags: [String!]

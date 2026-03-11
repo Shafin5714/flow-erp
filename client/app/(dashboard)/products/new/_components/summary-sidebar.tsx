@@ -15,24 +15,31 @@ interface SummarySidebarProps {
 }
 
 function SummaryFields({ control }: { control: Control<ProductFormValues> }) {
-  const name = useWatch({ control, name: "name" }) || "Untitled";
-  const costPrice = Number(useWatch({ control, name: "costPrice" })) || 0;
-  const salePrice = Number(useWatch({ control, name: "salePrice" })) || 0;
-  const isActive = useWatch({ control, name: "isActive" });
+  const formValues = useWatch({ control }) as Partial<ProductFormValues>;
+  const watchedName = formValues?.name;
+  const watchedCostPrice = Number(formValues?.costPrice) || 0;
+  const watchedSalePrice = Number(formValues?.salePrice) || 0;
+  const watchedIsActive = formValues?.isActive;
+  const watchedHasVariants = formValues?.hasVariants;
+  const watchedVariants = formValues?.variants;
 
-  const profit = salePrice - costPrice;
-  const margin = salePrice > 0 ? (profit / salePrice) * 100 : 0;
+  const profit = watchedSalePrice - watchedCostPrice;
+  const margin = watchedSalePrice > 0 ? (profit / watchedSalePrice) * 100 : 0;
 
   return (
     <>
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">Product</span>
-        <span className="font-medium text-right max-w-[150px] truncate">{name}</span>
+        <span className="font-medium text-right max-w-[150px] truncate">
+          {watchedName || "Untitled"}
+        </span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">Status</span>
-        <span className={cn("font-medium", isActive ? "text-emerald-600" : "text-amber-600")}>
-          {isActive ? "Active" : "Inactive"}
+        <span
+          className={cn("font-medium", watchedIsActive ? "text-emerald-600" : "text-amber-600")}
+        >
+          {watchedIsActive ? "Active" : "Inactive"}
         </span>
       </div>
       <div className="flex justify-between text-sm border-t pt-2 border-zinc-200 dark:border-zinc-800">
@@ -42,6 +49,14 @@ function SummaryFields({ control }: { control: Control<ProductFormValues> }) {
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">Margin</span>
         <span className="font-medium">{margin.toFixed(1)}%</span>
+      </div>
+      <div className="space-y-1">
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Variants:</span>
+          <span className="font-medium">
+            {watchedHasVariants ? `${watchedVariants?.length || 0} variant(s)` : "Disabled"}
+          </span>
+        </div>
       </div>
     </>
   );

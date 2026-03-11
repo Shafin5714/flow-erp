@@ -16,6 +16,21 @@ export const productSchema = z.object({
   stock: z.number().int().min(0, "Stock must be a non-negative integer"),
   lowStockThreshold: z.number().int().min(0, "Threshold must be non-negative"),
   isActive: z.boolean(),
+  hasVariants: z.boolean(),
+  variants: z
+    .array(
+      z.object({
+        name: z.string().min(1, "Variant name is required"),
+        sku: z.string().min(3, "SKU must be at least 3 characters"),
+        barcode: z.string().optional(),
+        costPrice: z.number().min(0, "Cost price must be positive"),
+        salePrice: z.number().min(0, "Sale price must be positive"),
+        discountPrice: z.number().min(0, "Discount price must be positive").optional(),
+        stock: z.number().int().min(0, "Stock must be a non-negative integer"),
+        isActive: z.boolean(),
+      })
+    )
+    .optional(),
   expiryDate: z.date().optional(),
   warrantyPeriod: z.string().optional(),
   tags: z.array(z.string()),
@@ -45,6 +60,8 @@ export const defaultFormValues: ProductFormValues = {
   stock: 0,
   lowStockThreshold: 10,
   isActive: true,
+  hasVariants: false,
+  variants: [],
   tags: [],
   weight: 0,
   dimensionL: 0,

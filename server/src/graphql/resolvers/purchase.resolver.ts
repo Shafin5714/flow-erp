@@ -2,6 +2,7 @@ import { Context } from "../context.js";
 
 interface PurchaseItemInput {
   productId: string;
+  variantId?: string;
   quantity: number;
   unitPrice: number;
 }
@@ -24,6 +25,10 @@ export const purchaseResolvers = {
   PurchaseItem: {
     product: async (parent: { productId: string }, _: unknown, { prisma }: Context) => {
       return prisma.product.findUnique({ where: { id: parent.productId } });
+    },
+    variant: async (parent: { variantId: string | null }, _: unknown, { prisma }: Context) => {
+      if (!parent.variantId) return null;
+      return prisma.productVariant.findUnique({ where: { id: parent.variantId } });
     },
   },
   Query: {
@@ -85,10 +90,17 @@ export const purchaseResolvers = {
 
         // Update stock for each product
         for (const item of input.items) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { stock: { increment: item.quantity } },
-          });
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
         }
 
         // Update vendor balance if there's due amount

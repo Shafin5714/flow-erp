@@ -15,6 +15,9 @@ export const productResolvers = {
       if (!parent.brandId) return null;
       return prisma.brand.findUnique({ where: { id: parent.brandId } });
     },
+    variants: async (parent: { id: string }, _: unknown, { prisma }: Context) => {
+      return prisma.productVariant.findMany({ where: { productId: parent.id } });
+    },
   },
   Query: {
     products: async (
@@ -66,7 +69,25 @@ export const productResolvers = {
       if (!user || !["ADMIN", "MANAGER"].includes(user.role)) {
         throw new Error("Unauthorized");
       }
-      return prisma.product.create({ data: input as never });
+
+      const { variants, ...productData } = input as Record<string, unknown> & {
+        hasVariants?: boolean;
+        variants?: Record<string, unknown>[];
+      };
+
+      return prisma.product.create({
+        data: {
+          ...productData,
+          ...(productData.hasVariants && variants && variants.length > 0
+            ? {
+                variants: {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  create: variants as any[],
+                },
+              }
+            : {}),
+        } as any,
+      });
     },
     updateProduct: async (
       _: unknown,

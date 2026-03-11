@@ -16,8 +16,9 @@ import Link from "next/link";
 
 import { productSchema, ProductFormValues, defaultFormValues } from "./_components/product-schema";
 import { GeneralTab } from "./_components/general-tab";
-import { PricingTab } from "./_components/pricing-tab";
 import { ShippingTab } from "./_components/shipping-tab";
+import { VariantsTab } from "./_components/variants-tab";
+import { PricingTab } from "./_components/pricing-tab";
 import { MediaTab, MediaTabRef } from "./_components/media-tab";
 import { SummarySidebar } from "./_components/summary-sidebar";
 
@@ -53,14 +54,16 @@ export default function NewProductPage() {
         supportingImages: [],
       };
 
-      const { categoryId, subcategoryId, ...restValues } = values;
+      const { categoryId, subcategoryId, variants, hasVariants, ...restValues } = values;
       const finalCategoryId = subcategoryId || categoryId;
 
       createProduct({
         variables: {
           input: {
             ...restValues,
+            hasVariants,
             categoryId: finalCategoryId,
+            ...(hasVariants && variants?.length ? { variants } : {}),
             ...(mainImage && { mainImage }),
             ...(supportingImages.length > 0 && { supportingImages }),
           },
@@ -91,8 +94,9 @@ export default function NewProductPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-6">
               <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsList className="grid w-full grid-cols-5 mb-6">
                   <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="variants">Variants</TabsTrigger>
                   <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
                   <TabsTrigger value="shipping">Shipping & Details</TabsTrigger>
                   <TabsTrigger value="media">Media</TabsTrigger>
@@ -100,6 +104,10 @@ export default function NewProductPage() {
 
                 <TabsContent value="general" className="space-y-6 mt-0">
                   <GeneralTab form={form} />
+                </TabsContent>
+
+                <TabsContent value="variants" className="space-y-6 mt-0">
+                  <VariantsTab form={form} />
                 </TabsContent>
 
                 <TabsContent value="pricing" className="space-y-6 mt-0">

@@ -9,3 +9,4 @@ export { purchaseTypeDefs } from "./purchase.js";
 export { accountTypeDefs } from "./account.js";
 export { dashboardTypeDefs } from "./dashboard.js";
 export { brandTypeDefs } from "./brand.js";
+export { variantTypeDefs } from "./variant.js";

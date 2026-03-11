@@ -25,6 +25,18 @@ export const GET_PRODUCTS = gql`
       stock
       lowStockThreshold
       isActive
+      hasVariants
+      variants {
+        id
+        name
+        sku
+        barcode
+        costPrice
+        salePrice
+        discountPrice
+        stock
+        isActive
+      }
       expiryDate
       warrantyPeriod
       tags
@@ -62,6 +74,12 @@ export const CREATE_PRODUCT = gql`
       sku
       mainImage
       supportingImages
+      hasVariants
+      variants {
+        id
+        name
+        sku
+      }
     }
   }
 `;

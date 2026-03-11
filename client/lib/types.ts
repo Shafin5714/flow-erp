@@ -5,6 +5,22 @@ export interface Category {
   children?: Category[];
 }
 
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  name: string;
+  sku: string;
+  barcode?: string;
+  costPrice: number;
+  salePrice: number;
+  discountPrice?: number;
+  stock: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  product?: Product;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -24,6 +40,8 @@ export interface Product {
   stock: number;
   lowStockThreshold: number;
   isActive: boolean;
+  hasVariants: boolean;
+  variants?: ProductVariant[];
   expiryDate?: string;
   warrantyPeriod?: string;
   tags: string[];

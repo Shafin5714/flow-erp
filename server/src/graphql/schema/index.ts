@@ -12,6 +12,7 @@ import {
   accountTypeDefs,
   dashboardTypeDefs,
   brandTypeDefs,
+  variantTypeDefs,
 } from "./typeDefs/index.js";
 import {
   dateTimeResolver,
@@ -25,6 +26,7 @@ import {
   accountResolvers,
   dashboardResolvers,
   brandResolvers,
+  variantResolvers,
 } from "../resolvers/index.js";
 
 const typeDefs = mergeTypeDefs([
@@ -39,6 +41,7 @@ const typeDefs = mergeTypeDefs([
   accountTypeDefs,
   dashboardTypeDefs,
   brandTypeDefs,
+  variantTypeDefs,
 ]);
 
 const resolvers = mergeResolvers([
@@ -53,6 +56,7 @@ const resolvers = mergeResolvers([
   accountResolvers,
   dashboardResolvers,
   brandResolvers,
+  variantResolvers,
 ]);
 
 export const schema = makeExecutableSchema({

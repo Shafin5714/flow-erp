@@ -16,6 +16,7 @@ export const purchaseTypeDefs = gql`
   type PurchaseItem {
     id: ID!
     product: Product!
+    variant: ProductVariant
     quantity: Int!
     unitPrice: Float!
     total: Float!
@@ -23,6 +24,7 @@ export const purchaseTypeDefs = gql`
 
   input PurchaseItemInput {
     productId: String!
+    variantId: String
     quantity: Int!
     unitPrice: Float!
   }

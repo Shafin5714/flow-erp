@@ -20,6 +20,7 @@ export const saleTypeDefs = gql`
   type SaleItem {
     id: ID!
     product: Product!
+    variant: ProductVariant
     quantity: Int!
     unitPrice: Float!
     total: Float!
@@ -27,6 +28,7 @@ export const saleTypeDefs = gql`
 
   input SaleItemInput {
     productId: String!
+    variantId: String
     quantity: Int!
     unitPrice: Float!
   }

@@ -45,6 +45,11 @@ export const GET_CATEGORIES = gql`
     categories {
       id
       name
+      parentId
+      children {
+        id
+        name
+      }
     }
   }
 `;
@@ -66,6 +71,11 @@ export const CREATE_CATEGORY = gql`
     createCategory(input: $input) {
       id
       name
+      parentId
+      children {
+        id
+        name
+      }
     }
   }
 `;

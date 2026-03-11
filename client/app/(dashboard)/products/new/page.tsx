@@ -64,6 +64,7 @@ const productSchema = z.object({
   barcode: z.string().optional(),
   brandId: z.string().optional(),
   categoryId: z.string().min(1, "Please select a category"),
+  subcategoryId: z.string().optional(),
   unit: z.string().min(1, "Please select a unit"),
   costPrice: z.number().min(0, "Cost price must be positive"),
   salePrice: z.number().min(0, "Sale price must be positive"),
@@ -122,7 +123,9 @@ export default function NewProductPage() {
   const router = useRouter();
   const [newCatName, setNewCatName] = useState("");
   const [newBrandName, setNewBrandName] = useState("");
+  const [newSubcatName, setNewSubcatName] = useState("");
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [subcatPopoverOpen, setSubcatPopoverOpen] = useState(false);
   const [brandPopoverOpen, setBrandPopoverOpen] = useState(false);
 
   const { data: catData, loading: catLoading } = useQuery<{ categories: Category[] }>(
@@ -132,7 +135,38 @@ export default function NewProductPage() {
     brands: { id: string; name: string }[];
   }>(GET_BRANDS);
   const categories = catData?.categories || [];
+  const topLevelCategories = categories.filter((c: Category) => !c.parentId);
   const brands = brandData?.brands || [];
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      sku: "",
+      barcode: "",
+      brandId: "",
+      categoryId: "",
+      subcategoryId: "",
+      unit: "PCS",
+      costPrice: 0,
+      salePrice: 0,
+      discountPrice: 0,
+      taxRate: 0,
+      stock: 0,
+      lowStockThreshold: 10,
+      isActive: true,
+      tags: [],
+      weight: 0,
+      dimensionL: 0,
+      dimensionW: 0,
+      dimensionH: 0,
+    },
+  });
+
+  const selectedCategoryId = useWatch({ control: form.control, name: "categoryId" });
+  const selectedCategory = categories.find((c: Category) => c.id === selectedCategoryId);
+  const subcategories = selectedCategory?.children || [];
 
   const [createProduct, { loading: submitting }] = useMutation<
     { createProduct: Product },
@@ -164,6 +198,22 @@ export default function NewProductPage() {
     refetchQueries: [{ query: GET_CATEGORIES }],
   });
 
+  const [createSubcategory, { loading: subcatCreating }] = useMutation<
+    { createCategory: Category },
+    { input: { name: string; parentId: string } }
+  >(CREATE_CATEGORY, {
+    onCompleted: (data) => {
+      toast.success("Subcategory created successfully");
+      form.setValue("subcategoryId", data.createCategory.id);
+      setNewSubcatName("");
+      setSubcatPopoverOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create subcategory");
+    },
+    refetchQueries: [{ query: GET_CATEGORIES }],
+  });
+
   const [createBrand, { loading: brandCreating }] = useMutation<
     { createBrand: { id: string; name: string } },
     { input: { name: string } }
@@ -178,31 +228,6 @@ export default function NewProductPage() {
       toast.error(error.message || "Failed to create brand");
     },
     refetchQueries: [{ query: GET_BRANDS }],
-  });
-
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      sku: "",
-      barcode: "",
-      brandId: "",
-      categoryId: "",
-      unit: "PCS",
-      costPrice: 0,
-      salePrice: 0,
-      discountPrice: 0,
-      taxRate: 0,
-      stock: 0,
-      lowStockThreshold: 10,
-      isActive: true,
-      tags: [],
-      weight: 0,
-      dimensionL: 0,
-      dimensionW: 0,
-      dimensionH: 0,
-    },
   });
 
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
@@ -239,10 +264,14 @@ export default function NewProductPage() {
       setUploadingImages(true);
       const { mainImage, supportingImages } = await uploadImages();
 
+      const { categoryId, subcategoryId, ...restValues } = values;
+      const finalCategoryId = subcategoryId || categoryId;
+
       createProduct({
         variables: {
           input: {
-            ...values,
+            ...restValues,
+            categoryId: finalCategoryId,
             ...(mainImage && { mainImage }),
             ...(supportingImages.length > 0 && { supportingImages }),
           },
@@ -464,7 +493,13 @@ export default function NewProductPage() {
                             <FormItem>
                               <FormLabel>Category</FormLabel>
                               <div className="flex gap-2">
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    form.setValue("subcategoryId", ""); // Reset subcategory when category changes
+                                  }}
+                                  value={field.value}
+                                >
                                   <FormControl>
                                     <SelectTrigger className="flex-1">
                                       <SelectValue
@@ -473,7 +508,7 @@ export default function NewProductPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {categories.map((category: Category) => (
+                                    {topLevelCategories.map((category: Category) => (
                                       <SelectItem key={category.id} value={category.id}>
                                         {category.name}
                                       </SelectItem>
@@ -533,6 +568,94 @@ export default function NewProductPage() {
                           )}
                         />
                       </div>
+
+                      {selectedCategoryId && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="subcategoryId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Subcategory (Optional)</FormLabel>
+                                <div className="flex gap-2">
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger className="flex-1">
+                                        <SelectValue placeholder="Select subcategory" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {subcategories.map((sub: Category) => (
+                                        <SelectItem key={sub.id} value={sub.id}>
+                                          {sub.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+
+                                  <Popover
+                                    open={subcatPopoverOpen}
+                                    onOpenChange={setSubcatPopoverOpen}
+                                  >
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="shrink-0"
+                                        type="button"
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80" align="end">
+                                      <div className="grid gap-4">
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium leading-none">
+                                            New Subcategory
+                                          </h4>
+                                          <p className="text-sm text-muted-foreground">
+                                            Add a new subcategory under {selectedCategory?.name}.
+                                          </p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="Subcategory Name"
+                                            value={newSubcatName}
+                                            onChange={(e) => setNewSubcatName(e.target.value)}
+                                            className="h-9"
+                                          />
+                                          <Button
+                                            size="sm"
+                                            className="h-9"
+                                            disabled={subcatCreating || !newSubcatName.trim()}
+                                            onClick={() =>
+                                              createSubcategory({
+                                                variables: {
+                                                  input: {
+                                                    name: newSubcatName,
+                                                    parentId: selectedCategoryId,
+                                                  },
+                                                },
+                                              })
+                                            }
+                                          >
+                                            {subcatCreating ? (
+                                              <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                              "Add"
+                                            )}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 

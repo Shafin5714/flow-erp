@@ -4,6 +4,9 @@ export const categoryTypeDefs = gql`
   type Category {
     id: ID!
     name: String!
+    parentId: String
+    parent: Category
+    children: [Category!]!
     createdAt: DateTime!
     updatedAt: DateTime!
     products: [Product!]!
@@ -11,10 +14,12 @@ export const categoryTypeDefs = gql`
 
   input CreateCategoryInput {
     name: String!
+    parentId: String
   }
 
   input UpdateCategoryInput {
     name: String
+    parentId: String
   }
 
   extend type Query {

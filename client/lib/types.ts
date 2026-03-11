@@ -1,6 +1,8 @@
 export interface Category {
   id: string;
   name: string;
+  parentId?: string;
+  children?: Category[];
 }
 
 export interface Product {

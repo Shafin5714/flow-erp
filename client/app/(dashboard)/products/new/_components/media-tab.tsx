@@ -13,20 +13,36 @@ export interface MediaTabRef {
   }>;
 }
 
-export const MediaTab = forwardRef<MediaTabRef>(function MediaTab(_props, ref) {
+interface MediaTabProps {
+  initialMainImage?: string | null;
+  initialSupportingImages?: string[];
+}
+
+export const MediaTab = forwardRef<MediaTabRef, MediaTabProps>(function MediaTab(
+  { initialMainImage, initialSupportingImages },
+  ref
+) {
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
-  const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
-  const [supportingImageFiles, setSupportingImageFiles] = useState<File[]>([]);
-  const [supportingImagePreviews, setSupportingImagePreviews] = useState<string[]>([]);
+  const [existingMainImage, setExistingMainImage] = useState<string | null>(
+    initialMainImage || null
+  );
+
+  const [existingSupportingImages, setExistingSupportingImages] = useState<string[]>(
+    initialSupportingImages || []
+  );
+  const [newSupportingFiles, setNewSupportingFiles] = useState<File[]>([]);
+  const [newSupportingPreviews, setNewSupportingPreviews] = useState<string[]>([]);
+
+  const mainImagePreview = mainImageFile ? URL.createObjectURL(mainImageFile) : existingMainImage;
 
   useImperativeHandle(ref, () => ({
     uploadImages: async () => {
-      if (!mainImageFile && supportingImageFiles.length === 0)
-        return { mainImage: null, supportingImages: [] };
+      if (!mainImageFile && newSupportingFiles.length === 0)
+        return { mainImage: existingMainImage, supportingImages: existingSupportingImages };
 
       const formData = new FormData();
       if (mainImageFile) formData.append("mainImage", mainImageFile);
-      supportingImageFiles.forEach((file) => formData.append("supportingImages", file));
+      newSupportingFiles.forEach((file) => formData.append("supportingImages", file));
 
       const res = await fetch("http://localhost:4000/api/upload", {
         method: "POST",
@@ -37,10 +53,13 @@ export const MediaTab = forwardRef<MediaTabRef>(function MediaTab(_props, ref) {
       const data = await res.json();
 
       const uploadedUrls: string[] = data.images.map((img: { url: string }) => img.url);
-      const mainImageUrl = mainImageFile ? uploadedUrls[0] : null;
-      const supportingImageUrls = mainImageFile ? uploadedUrls.slice(1) : uploadedUrls;
+      const newlyUploadedMainImage = mainImageFile ? uploadedUrls[0] : existingMainImage;
+      const newlyUploadedSupportingUrls = mainImageFile ? uploadedUrls.slice(1) : uploadedUrls;
 
-      return { mainImage: mainImageUrl, supportingImages: supportingImageUrls };
+      return {
+        mainImage: newlyUploadedMainImage,
+        supportingImages: [...existingSupportingImages, ...newlyUploadedSupportingUrls],
+      };
     },
   }));
 
@@ -70,7 +89,7 @@ export const MediaTab = forwardRef<MediaTabRef>(function MediaTab(_props, ref) {
                     type="button"
                     onClick={() => {
                       setMainImageFile(null);
-                      setMainImagePreview(null);
+                      setExistingMainImage(null);
                     }}
                     className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
                   >
@@ -90,7 +109,7 @@ export const MediaTab = forwardRef<MediaTabRef>(function MediaTab(_props, ref) {
                   const file = e.target.files?.[0];
                   if (file) {
                     setMainImageFile(file);
-                    setMainImagePreview(URL.createObjectURL(file));
+                    setExistingMainImage(null);
                   }
                 }}
               />
@@ -106,39 +125,62 @@ export const MediaTab = forwardRef<MediaTabRef>(function MediaTab(_props, ref) {
                 multiple
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
-                  setSupportingImageFiles((prev) => [...prev, ...files]);
+                  setNewSupportingFiles((prev) => [...prev, ...files]);
                   const newPreviews = files.map((f) => URL.createObjectURL(f));
-                  setSupportingImagePreviews((prev) => [...prev, ...newPreviews]);
+                  setNewSupportingPreviews((prev) => [...prev, ...newPreviews]);
                 }}
               />
-              {supportingImagePreviews.length > 0 && (
-                <div className="flex flex-wrap gap-4">
-                  {supportingImagePreviews.map((preview, index) => (
-                    <div
-                      key={index}
-                      className="relative h-20 w-20 rounded-md border overflow-hidden"
+              <div className="flex flex-wrap gap-4">
+                {/* Existing Images */}
+                {existingSupportingImages.map((url, index) => (
+                  <div
+                    key={`existing-${index}`}
+                    className="relative h-20 w-20 rounded-md border overflow-hidden"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`Existing ${index}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExistingSupportingImages((prev) => prev.filter((_, i) => i !== index));
+                      }}
+                      className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={preview}
-                        alt={`Preview ${index}`}
-                        className="h-full w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSupportingImageFiles((prev) => prev.filter((_, i) => i !== index));
-                          setSupportingImagePreviews((prev) => prev.filter((_, i) => i !== index));
-                          URL.revokeObjectURL(preview);
-                        }}
-                        className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+
+                {/* New Preview Images */}
+                {newSupportingPreviews.map((preview, index) => (
+                  <div
+                    key={`new-${index}`}
+                    className="relative h-20 w-20 rounded-md border overflow-hidden"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={preview}
+                      alt={`Preview ${index}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewSupportingFiles((prev) => prev.filter((_, i) => i !== index));
+                        setNewSupportingPreviews((prev) => prev.filter((_, i) => i !== index));
+                        URL.revokeObjectURL(preview);
+                      }}
+                      className="absolute top-1 right-1 bg-background/80 rounded-full p-1 shadow-sm hover:bg-background"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </CardContent>

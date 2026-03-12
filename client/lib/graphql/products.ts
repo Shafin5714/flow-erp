@@ -9,6 +9,7 @@ export const GET_PRODUCTS = gql`
       sku
       barcode
       brandId
+      categoryId
       brand {
         id
         name
@@ -45,7 +46,62 @@ export const GET_PRODUCTS = gql`
       category {
         id
         name
+        parentId
       }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_PRODUCT = gql`
+  query GetProduct($id: ID!) {
+    product(id: $id) {
+      id
+      name
+      description
+      sku
+      barcode
+      brandId
+      categoryId
+      brand {
+        id
+        name
+      }
+      category {
+        id
+        name
+        parentId
+      }
+      unit
+      weight
+      dimensionL
+      dimensionW
+      dimensionH
+      costPrice
+      salePrice
+      discountPrice
+      taxRate
+      stock
+      lowStockThreshold
+      isActive
+      hasVariants
+      variants {
+        id
+        name
+        sku
+        barcode
+        costPrice
+        salePrice
+        discountPrice
+        stock
+        isActive
+      }
+      expiryDate
+      warrantyPeriod
+      tags
+      mainImage
+      supportingImages
       createdAt
       updatedAt
     }
@@ -69,6 +125,24 @@ export const GET_CATEGORIES = gql`
 export const CREATE_PRODUCT = gql`
   mutation CreateProduct($input: CreateProductInput!) {
     createProduct(input: $input) {
+      id
+      name
+      sku
+      mainImage
+      supportingImages
+      hasVariants
+      variants {
+        id
+        name
+        sku
+      }
+    }
+  }
+`;
+
+export const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct($id: ID!, $input: UpdateProductInput!) {
+    updateProduct(id: $id, input: $input) {
       id
       name
       sku

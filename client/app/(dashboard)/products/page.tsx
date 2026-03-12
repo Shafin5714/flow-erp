@@ -297,7 +297,7 @@ export default function ProductsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-sm text-muted-foreground italic">
-                            {product.brand || "-"}
+                            {product.brand?.name || "-"}
                           </span>
                         </td>
                         <td className="px-6 py-4">

@@ -11,16 +11,17 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $generateHtmlFromNodes } from "@lexical/html";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import {
   $getSelection,
+  $getRoot,
   $isRangeSelection,
   SELECTION_CHANGE_COMMAND,
   FORMAT_TEXT_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
 } from "lexical";
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Bold, Italic, Underline, List, ListOrdered } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -141,7 +142,29 @@ function HtmlOnChangePlugin({ onChange }: { onChange: (html: string) => void }) 
   return null;
 }
 
-export function RichTextEditor({ onChange, placeholder, className }: RichTextEditorProps) {
+function InitialValuePlugin({ value }: { value: string }) {
+  const [editor] = useLexicalComposerContext();
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!initializedRef.current && value && value !== "<p><br></p>") {
+      editor.update(() => {
+        const root = $getRoot();
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(value, "text/html");
+        const nodes = $generateNodesFromDOM(editor, dom);
+
+        root.clear();
+        root.append(...nodes);
+      });
+      initializedRef.current = true;
+    }
+  }, [editor, value]);
+
+  return null;
+}
+
+export function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
   const initialConfig = {
     namespace: "ProductDescription",
     theme,
@@ -174,6 +197,7 @@ export function RichTextEditor({ onChange, placeholder, className }: RichTextEdi
           <ListPlugin />
           <LinkPlugin />
           <HtmlOnChangePlugin onChange={onChange} />
+          <InitialValuePlugin value={value} />
         </div>
       </LexicalComposer>
     </div>

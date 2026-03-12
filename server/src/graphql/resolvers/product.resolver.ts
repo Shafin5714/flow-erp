@@ -1,5 +1,17 @@
 import { Context } from "../context.js";
 
+interface ProductVariantInput {
+  id?: string;
+  name: string;
+  sku: string;
+  barcode?: string;
+  costPrice: number;
+  salePrice: number;
+  discountPrice?: number;
+  stock: number;
+  isActive?: boolean;
+}
+
 interface ProductFilterInput {
   search?: string;
   categoryId?: string;
@@ -70,9 +82,15 @@ export const productResolvers = {
         throw new Error("Unauthorized");
       }
 
-      const { variants, ...productData } = input as Record<string, unknown> & {
+      const { variants, brandId, ...restProductData } = input as Record<string, unknown> & {
         hasVariants?: boolean;
-        variants?: Record<string, unknown>[];
+        variants?: ProductVariantInput[];
+        brandId?: string;
+      };
+
+      const productData = {
+        ...restProductData,
+        brandId: brandId === "" ? null : brandId,
       };
 
       return prisma.product.create({
@@ -81,12 +99,11 @@ export const productResolvers = {
           ...(productData.hasVariants && variants && variants.length > 0
             ? {
                 variants: {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  create: variants as any[],
+                  create: variants,
                 },
               }
             : {}),
-        } as any,
+        } as never,
       });
     },
     updateProduct: async (
@@ -97,7 +114,48 @@ export const productResolvers = {
       if (!user || !["ADMIN", "MANAGER"].includes(user.role)) {
         throw new Error("Unauthorized");
       }
-      return prisma.product.update({ where: { id }, data: input as never });
+
+      const { variants, brandId, ...restProductData } = input as Record<string, unknown> & {
+        hasVariants?: boolean;
+        variants?: ProductVariantInput[];
+        brandId?: string;
+      };
+
+      const productData = {
+        ...restProductData,
+        brandId: brandId === "" ? null : brandId,
+      };
+
+      if (variants !== undefined) {
+        if (productData.hasVariants && variants.length > 0) {
+          return prisma.product.update({
+            where: { id },
+            data: {
+              ...productData,
+              variants: {
+                deleteMany: {},
+                create: variants.map((v) => {
+                  const { id: _id, ...rest } = v;
+                  void _id;
+                  return rest;
+                }),
+              },
+            } as never,
+          });
+        } else {
+          return prisma.product.update({
+            where: { id },
+            data: {
+              ...productData,
+              variants: {
+                deleteMany: {},
+              },
+            } as never,
+          });
+        }
+      }
+
+      return prisma.product.update({ where: { id }, data: productData });
     },
     deleteProduct: async (_: unknown, { id }: { id: string }, { prisma, user }: Context) => {
       if (!user || user.role !== "ADMIN") {

@@ -44,13 +44,17 @@ export function GeneralTab({ form }: GeneralTabProps) {
 
   const { data: catData, loading: catLoading } = useQuery<{
     categories: Category[];
-  }>(GET_CATEGORIES);
+  }>(GET_CATEGORIES, {
+    fetchPolicy: "network-only",
+  });
   const { data: brandData, loading: brandLoading } = useQuery<{
     brands: { id: string; name: string }[];
-  }>(GET_BRANDS);
+  }>(GET_BRANDS, {
+    fetchPolicy: "network-only",
+  });
 
   const categories = catData?.categories || [];
-  const topLevelCategories = categories.filter((c: Category) => !c.parentId);
+  const topLevelCategories = categories.filter((c: Category) => !c.parentId || c.parentId === "");
   const brands = brandData?.brands || [];
 
   const selectedCategoryId = useWatch({
@@ -58,7 +62,7 @@ export function GeneralTab({ form }: GeneralTabProps) {
     name: "categoryId",
   });
   const selectedCategory = categories.find((c: Category) => c.id === selectedCategoryId);
-  const subcategories = selectedCategory?.children || [];
+  const subcategories = categories.filter((c: Category) => c.parentId === selectedCategoryId);
 
   const [createCategory, { loading: catCreating }] = useMutation<
     { createCategory: Category },
@@ -162,7 +166,11 @@ export function GeneralTab({ form }: GeneralTabProps) {
                 <FormItem>
                   <FormLabel>Brand / Manufacturer</FormLabel>
                   <div className="flex gap-2">
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                      key={`${field.value}-${brands.length}`}
+                    >
                       <FormControl>
                         <SelectTrigger className="flex-1">
                           <SelectValue placeholder={brandLoading ? "Loading..." : "Select brand"} />
@@ -225,7 +233,7 @@ export function GeneralTab({ form }: GeneralTabProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Unit</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || "PCS"}>
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select unit" />
@@ -287,7 +295,8 @@ export function GeneralTab({ form }: GeneralTabProps) {
                         field.onChange(value);
                         form.setValue("subcategoryId", "");
                       }}
-                      value={field.value}
+                      value={field.value || ""}
+                      key={`${field.value}-${topLevelCategories.length}`}
                     >
                       <FormControl>
                         <SelectTrigger className="flex-1">
@@ -358,7 +367,11 @@ export function GeneralTab({ form }: GeneralTabProps) {
                   <FormItem>
                     <FormLabel>Subcategory (Optional)</FormLabel>
                     <div className="flex gap-2">
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                        key={`${field.value}-${subcategories.length}`}
+                      >
                         <FormControl>
                           <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Select subcategory" />

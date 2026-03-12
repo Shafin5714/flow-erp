@@ -20,6 +20,7 @@ export const productSchema = z.object({
   variants: z
     .array(
       z.object({
+        id: z.string().optional(),
         name: z.string().min(1, "Variant name is required"),
         sku: z.string().min(3, "SKU must be at least 3 characters"),
         barcode: z.string().optional(),

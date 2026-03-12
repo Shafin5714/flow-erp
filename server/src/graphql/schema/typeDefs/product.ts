@@ -8,6 +8,7 @@ export const productTypeDefs = gql`
     sku: String!
     barcode: String
     brandId: String
+    categoryId: String!
     brand: Brand
     category: Category!
     unit: String!
@@ -61,6 +62,18 @@ export const productTypeDefs = gql`
     supportingImages: [String!]
   }
 
+  input UpdateVariantInput {
+    id: ID
+    name: String
+    sku: String
+    barcode: String
+    costPrice: Float
+    salePrice: Float
+    discountPrice: Float
+    stock: Int
+    isActive: Boolean
+  }
+
   input UpdateProductInput {
     name: String
     description: String
@@ -81,6 +94,7 @@ export const productTypeDefs = gql`
     lowStockThreshold: Int
     isActive: Boolean
     hasVariants: Boolean
+    variants: [UpdateVariantInput!]
     expiryDate: DateTime
     warrantyPeriod: String
     tags: [String!]

@@ -5,6 +5,11 @@ export interface Category {
   children?: Category[];
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+}
+
 export interface ProductVariant {
   id: string;
   productId: string;
@@ -27,7 +32,10 @@ export interface Product {
   description?: string;
   sku: string;
   barcode?: string;
-  brand?: string;
+  brandId?: string;
+  categoryId: string;
+  brand?: Brand;
+
   unit: string;
   weight?: number;
   dimensionL?: number;

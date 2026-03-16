@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "@apollo/client";
 import { GET_CATEGORIES, CREATE_CATEGORY, DELETE_CATEGORY } from "@/lib/graphql/products";
 import { Category } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Plus,
@@ -176,37 +175,41 @@ export default function CategoriesPage() {
         </Popover>
       </div>
 
-      <Card className="overflow-hidden border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
-        <CardHeader className="flex flex-row items-center justify-between border-b bg-zinc-50/50 dark:bg-zinc-900/50 px-6 py-4">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-6 py-4 gap-4 sm:gap-0">
           <div className="flex items-center gap-4 flex-1">
             <div className="flex items-center gap-2">
-              <Tag className="h-5 w-5 text-zinc-500" />
-              <CardTitle className="text-lg">All Categories</CardTitle>
+              <div className="rounded-lg bg-primary/10 p-1.5">
+                <Tag className="h-4 w-4 text-primary" />
+              </div>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                All Categories
+              </h2>
             </div>
             <div className="relative max-w-sm w-full hidden md:block">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search categories..."
-                className="pl-9 h-9 bg-background"
+                className="pl-9 h-9 bg-background border-zinc-200 dark:border-zinc-800"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
-          <CardAction>
+          <div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => refetch()}
               disabled={loading}
-              className="h-8 gap-1.5"
+              className="h-8 gap-1.5 border-zinc-200 dark:border-zinc-800"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="p-0">
+          </div>
+        </div>
+        <div className="p-0">
           {loading ? (
             <div className="flex h-64 flex-col items-center justify-center space-y-4">
               <RefreshCw className="h-8 w-8 animate-spin text-primary" />
@@ -245,103 +248,95 @@ export default function CategoriesPage() {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">Category Name</th>
-                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                  {filteredRootCats.map((category) => {
-                    const children = categoryTree.childMap.get(category.id) || [];
-                    const matchesSearch = searchQuery
-                      ? category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        children.some((c) =>
-                          c.name.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                      : true;
+            <div className="flex flex-col">
+              <div className="flex items-center px-6 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="flex-1">Category Name</div>
+                <div className="w-48 text-right">Actions</div>
+              </div>
+              <div className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+                {filteredRootCats.map((category) => {
+                  const children = categoryTree.childMap.get(category.id) || [];
+                  const matchesSearch = searchQuery
+                    ? category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      children.some((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    : true;
 
-                    if (!matchesSearch) return null;
+                  if (!matchesSearch) return null;
 
-                    const isExpanded = searchQuery ? true : expandedCats.has(category.id);
-                    const hasChildren = children.length > 0;
+                  const isExpanded = searchQuery ? true : expandedCats.has(category.id);
+                  const hasChildren = children.length > 0;
 
-                    return (
-                      <React.Fragment key={category.id}>
-                        {/* Parent Category Row */}
-                        <tr className="group transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800/50">
-                          <td className="px-6 py-3 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`h-6 w-6 rounded-md ${!hasChildren && "invisible"}`}
-                                onClick={() => toggleExpand(category.id)}
+                  return (
+                    <div key={category.id} className="flex flex-col">
+                      {/* Parent Category Row */}
+                      <div className="group flex items-center justify-between px-6 py-3 transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50">
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-6 w-6 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800 ${!hasChildren && "invisible"}`}
+                            onClick={() => toggleExpand(category.id)}
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-zinc-500" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-zinc-500" />
+                            )}
+                          </Button>
+                          <span className="font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                            {category.name}
+                            {hasChildren && (
+                              <Badge
+                                variant="secondary"
+                                className="px-1.5 py-0 h-5 text-[10px] font-medium"
                               >
-                                {isExpanded ? (
-                                  <ChevronDown className="h-4 w-4 text-zinc-500" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4 text-zinc-500" />
-                                )}
-                              </Button>
-                              <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                {category.name}
-                                {hasChildren && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="px-1.5 py-0 h-5 text-xs font-normal"
-                                  >
-                                    {children.length}
-                                  </Badge>
-                                )}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-3 whitespace-nowrap text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-                                onClick={() => {
-                                  setNewCatParentId(category.id);
-                                  setPopoverOpen(true);
-                                }}
-                              >
-                                <Plus className="h-3.5 w-3.5 mr-1" /> Subcategory
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => {
-                                  if (hasChildren) {
-                                    alert(
-                                      `Cannot delete "${category.name}" because it has subcategories. Delete them first.`
-                                    );
-                                    return;
-                                  }
-                                  if (
-                                    window.confirm(
-                                      `Are you sure you want to delete "${category.name}"?`
-                                    )
-                                  ) {
-                                    deleteCategory({ variables: { id: category.id } });
-                                  }
-                                }}
-                                disabled={deleting}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
+                                {children.length}
+                              </Badge>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-end gap-1 w-48 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10 whitespace-nowrap"
+                            onClick={() => {
+                              setNewCatParentId(category.id);
+                              setPopoverOpen(true);
+                            }}
+                          >
+                            <Plus className="h-3.5 w-3.5 mr-1" /> Subcategory
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full"
+                            onClick={() => {
+                              if (hasChildren) {
+                                alert(
+                                  `Cannot delete "${category.name}" because it has subcategories. Delete them first.`
+                                );
+                                return;
+                              }
+                              if (
+                                window.confirm(
+                                  `Are you sure you want to delete "${category.name}"?`
+                                )
+                              ) {
+                                deleteCategory({ variables: { id: category.id } });
+                              }
+                            }}
+                            disabled={deleting}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
 
-                        {/* Child Categories Rows */}
-                        {isExpanded &&
-                          children.map((child) => {
+                      {/* Child Categories Rows */}
+                      {isExpanded && hasChildren && (
+                        <div className="flex flex-col bg-zinc-50/50 dark:bg-zinc-900/30">
+                          {children.map((child) => {
                             const childMatchesSearch = searchQuery
                               ? child.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -350,23 +345,21 @@ export default function CategoriesPage() {
                             if (!childMatchesSearch) return null;
 
                             return (
-                              <tr
+                              <div
                                 key={child.id}
-                                className="group transition-colors bg-zinc-50/30 hover:bg-zinc-50/80 dark:bg-zinc-900/20 dark:hover:bg-zinc-900/60 border-b border-zinc-100/50 dark:border-zinc-800/30"
+                                className="group flex items-center justify-between px-6 py-2.5 transition-colors border-t border-zinc-100/50 dark:border-zinc-800/30 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 pl-14"
                               >
-                                <td className="px-6 py-2.5 whitespace-nowrap">
-                                  <div className="flex items-center gap-2 ml-8">
-                                    <CornerDownRight className="h-4 w-4 text-zinc-300 dark:text-zinc-600" />
-                                    <span className="text-zinc-700 dark:text-zinc-300">
-                                      {child.name}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-2.5 whitespace-nowrap text-right">
+                                <div className="flex items-center gap-3">
+                                  <CornerDownRight className="h-4 w-4 text-zinc-400 shrink-0" />
+                                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                                    {child.name}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-end w-48 opacity-0 group-hover:opacity-100 transition-opacity pr-9">
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full"
                                     onClick={() => {
                                       if (
                                         window.confirm(
@@ -380,19 +373,20 @@ export default function CategoriesPage() {
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
-                                </td>
-                              </tr>
+                                </div>
+                              </div>
                             );
                           })}
-                      </React.Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

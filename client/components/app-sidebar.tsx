@@ -49,6 +49,7 @@ const mainNavItems: NavItem[] = [
       { title: "All Products", href: "/products" },
       { title: "Add Product", href: "/products/new" },
       { title: "Categories", href: "/products/categories" },
+      { title: "Brands", href: "/products/brands" },
     ],
   },
   {

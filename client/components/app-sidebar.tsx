@@ -14,6 +14,7 @@ import {
   CreditCard,
   Settings,
   HelpCircle,
+  Truck,
   Menu,
   ChevronDown,
   Moon,
@@ -59,6 +60,15 @@ const mainNavItems: NavItem[] = [
       { title: "All Orders", href: "/orders" },
       { title: "Returns", href: "/orders/returns" },
       { title: "Order Tracking", href: "/orders/tracking" },
+    ],
+  },
+  {
+    title: "Purchases",
+    icon: Truck,
+    items: [
+      { title: "All Purchases", href: "/purchases" },
+      { title: "New Purchase", href: "/purchases/new" },
+      { title: "Vendors", href: "/purchases/vendors" },
     ],
   },
   {

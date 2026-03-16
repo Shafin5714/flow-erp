@@ -59,3 +59,37 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Vendor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  balance: number;
+  createdAt: string;
+  updatedAt: string;
+  purchases?: Purchase[];
+  transactions?: unknown[];
+}
+
+export interface PurchaseItem {
+  id: string;
+  product: Product;
+  variant?: ProductVariant;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface Purchase {
+  id: string;
+  vendor: Vendor;
+  items: PurchaseItem[];
+  subtotal: number;
+  total: number;
+  paidAmount: number;
+  dueAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -116,5 +116,110 @@ export const purchaseResolvers = {
 
       return purchase;
     },
+    updatePurchase: async (
+      _: unknown,
+      { id, input }: { id: string; input: Partial<CreatePurchaseInput> },
+      { prisma, user }: Context
+    ) => {
+      if (!user || !["ADMIN", "MANAGER"].includes(user.role)) {
+        throw new Error("Unauthorized");
+      }
+
+      return prisma.$transaction(async (tx) => {
+        const existingPurchase = await tx.purchase.findUnique({
+          where: { id },
+          include: { items: true },
+        });
+
+        if (!existingPurchase) throw new Error("Purchase not found");
+
+        // Revert old stock increments
+        for (const item of existingPurchase.items) {
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { decrement: item.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { decrement: item.quantity } },
+            });
+          }
+        }
+
+        // Revert old vendor balance if there was a due amount
+        if (existingPurchase.dueAmount > 0) {
+          await tx.vendor.update({
+            where: { id: existingPurchase.vendorId },
+            data: { balance: { decrement: existingPurchase.dueAmount } },
+          });
+        }
+
+        // Calculate new totals
+        const vendorId = input.vendorId || existingPurchase.vendorId;
+        const items = input.items || existingPurchase.items;
+        const paidAmount = input.paidAmount ?? existingPurchase.paidAmount;
+
+        let subtotal = 0;
+        const itemsData = items.map((item) => {
+          const total = item.quantity * item.unitPrice;
+          subtotal += total;
+          return {
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total,
+          };
+        });
+
+        const total = subtotal;
+        const dueAmount = total - paidAmount;
+
+        // Delete old items and update purchase
+        await tx.purchaseItem.deleteMany({ where: { purchaseId: id } });
+
+        const updatedPurchase = await tx.purchase.update({
+          where: { id },
+          data: {
+            vendorId,
+            subtotal,
+            total,
+            paidAmount,
+            dueAmount,
+            items: {
+              create: itemsData,
+            },
+          },
+          include: { items: true },
+        });
+
+        // Apply new stock increments
+        for (const item of itemsData) {
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+
+        // Update vendor balance if there's a new due amount
+        if (dueAmount > 0) {
+          await tx.vendor.update({
+            where: { id: vendorId },
+            data: { balance: { increment: dueAmount } },
+          });
+        }
+
+        return updatedPurchase;
+      });
+    },
   },
 };

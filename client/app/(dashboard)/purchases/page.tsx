@@ -318,9 +318,11 @@ export default function PurchasesPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem className="gap-2">
-                              <Eye className="h-4 w-4" /> View Details
-                            </DropdownMenuItem>
+                            <Link href={`/purchases/${p.id}`}>
+                              <DropdownMenuItem className="gap-2 cursor-pointer">
+                                <Eye className="h-4 w-4" /> View Details
+                              </DropdownMenuItem>
+                            </Link>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>

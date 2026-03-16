@@ -35,6 +35,12 @@ export const purchaseTypeDefs = gql`
     paidAmount: Float!
   }
 
+  input UpdatePurchaseInput {
+    vendorId: String
+    items: [PurchaseItemInput!]
+    paidAmount: Float
+  }
+
   extend type Query {
     purchases(startDate: DateTime, endDate: DateTime): [Purchase!]!
     purchase(id: ID!): Purchase
@@ -42,5 +48,6 @@ export const purchaseTypeDefs = gql`
 
   extend type Mutation {
     createPurchase(input: CreatePurchaseInput!): Purchase!
+    updatePurchase(id: ID!, input: UpdatePurchaseInput!): Purchase!
   }
 `;

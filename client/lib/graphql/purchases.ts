@@ -86,3 +86,20 @@ export const CREATE_PURCHASE = gql`
     }
   }
 `;
+export const UPDATE_PURCHASE = gql`
+  mutation UpdatePurchase($id: ID!, $input: UpdatePurchaseInput!) {
+    updatePurchase(id: $id, input: $input) {
+      id
+      vendor {
+        id
+        name
+      }
+      subtotal
+      total
+      paidAmount
+      dueAmount
+      createdAt
+      updatedAt
+    }
+  }
+`;

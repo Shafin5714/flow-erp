@@ -70,13 +70,25 @@ export default function ProductsPage() {
 
   const products = useMemo<Product[]>(() => data?.products || [], [data?.products]);
 
+  // For products with variants, aggregate stock from variants
+  const getEffectiveStock = (p: Product) => {
+    if (p.hasVariants && p.variants && p.variants.length > 0) {
+      return p.variants.reduce((sum, v) => sum + v.stock, 0);
+    }
+    return p.stock;
+  };
+
   const stats = useMemo(() => {
     const total = products.length;
-    const low = products.filter(
-      (p: Product) => p.stock <= p.lowStockThreshold && p.stock > 0
-    ).length;
-    const out = products.filter((p: Product) => p.stock === 0).length;
-    const value = products.reduce((acc: number, p: Product) => acc + p.stock * p.salePrice, 0);
+    const low = products.filter((p: Product) => {
+      const s = getEffectiveStock(p);
+      return s <= p.lowStockThreshold && s > 0;
+    }).length;
+    const out = products.filter((p: Product) => getEffectiveStock(p) === 0).length;
+    const value = products.reduce(
+      (acc: number, p: Product) => acc + getEffectiveStock(p) * p.salePrice,
+      0
+    );
     return { total, low, out, value };
   }, [products]);
 
@@ -103,7 +115,8 @@ export default function ProductsPage() {
     const searchLower = searchTerm.toLowerCase();
 
     return products.filter((product) => {
-      const { name, sku, category, brand, isActive, stock, lowStockThreshold } = product;
+      const { name, sku, category, brand, isActive, lowStockThreshold } = product;
+      const stock = getEffectiveStock(product);
 
       const matchesSearch =
         name.toLowerCase().includes(searchLower) || sku.toLowerCase().includes(searchLower);
@@ -407,9 +420,10 @@ export default function ProductsPage() {
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {filteredProducts.map((product) => {
+                    const effectiveStock = getEffectiveStock(product);
                     const isLowStock =
-                      product.stock <= product.lowStockThreshold && product.stock > 0;
-                    const isOutOfStock = product.stock === 0;
+                      effectiveStock <= product.lowStockThreshold && effectiveStock > 0;
+                    const isOutOfStock = effectiveStock === 0;
 
                     return (
                       <tr
@@ -509,7 +523,7 @@ export default function ProductsPage() {
                               </span>
                             </div>
                             <span className="text-xs text-muted-foreground whitespace-nowrap">
-                              {product.stock} {product.unit} available
+                              {effectiveStock} {product.unit} available
                             </span>
                           </div>
                         </td>
@@ -524,7 +538,7 @@ export default function ProductsPage() {
                         <td className="px-6 py-3">
                           <span className="text-sm font-medium text-zinc-500 whitespace-nowrap">
                             $
-                            {(product.stock * product.salePrice).toLocaleString(undefined, {
+                            {(effectiveStock * product.salePrice).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                             })}
                           </span>

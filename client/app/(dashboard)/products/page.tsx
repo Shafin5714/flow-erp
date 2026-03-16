@@ -213,7 +213,7 @@ export default function ProductsPage() {
         ].map((stat, i) => (
           <Card
             key={i}
-            className="group relative overflow-hidden border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            className="group relative overflow-hidden border-none shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 rounded-2xl"
           >
             <div
               className={cn(
@@ -256,22 +256,22 @@ export default function ProductsPage() {
         ))}
       </div>
 
-      <Card className="overflow-hidden border-none shadow-xl ring-1 ring-zinc-200 dark:ring-zinc-800">
-        <div className="p-4 border-b bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col gap-4">
+      <div className="overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-2xl bg-white dark:bg-zinc-950">
+        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col gap-4">
           <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-4">
-            <div className="relative w-full xl:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative w-full xl:w-96">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products by name or SKU..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                className="pl-10 h-10 rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm transition-shadow hover:ring-1 hover:ring-zinc-300 dark:hover:ring-zinc-700 focus-visible:ring-primary text-sm"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[140px] h-10 rounded-full bg-white dark:bg-zinc-900">
+                <SelectTrigger className="w-[150px] h-10 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 text-sm">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -285,7 +285,7 @@ export default function ProductsPage() {
               </Select>
 
               <Select value={brandFilter} onValueChange={setBrandFilter}>
-                <SelectTrigger className="w-[140px] h-10 rounded-full bg-white dark:bg-zinc-900">
+                <SelectTrigger className="w-[150px] h-10 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 text-sm">
                   <SelectValue placeholder="Brand" />
                 </SelectTrigger>
                 <SelectContent>
@@ -299,7 +299,7 @@ export default function ProductsPage() {
               </Select>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[130px] h-10 rounded-full bg-white dark:bg-zinc-900">
+                <SelectTrigger className="w-[150px] h-10 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 text-sm">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -310,7 +310,7 @@ export default function ProductsPage() {
               </Select>
 
               <Select value={stockFilter} onValueChange={setStockFilter}>
-                <SelectTrigger className="w-[140px] h-10 rounded-full bg-white dark:bg-zinc-900">
+                <SelectTrigger className="w-[150px] h-10 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 text-sm">
                   <SelectValue placeholder="Stock" />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,12 +323,12 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            {(searchTerm ||
-              categoryFilter !== "all" ||
-              brandFilter !== "all" ||
-              statusFilter !== "all" ||
-              stockFilter !== "all") && (
+          {(searchTerm ||
+            categoryFilter !== "all" ||
+            brandFilter !== "all" ||
+            statusFilter !== "all" ||
+            stockFilter !== "all") && (
+            <div className="flex items-center justify-between pt-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -339,14 +339,14 @@ export default function ProductsPage() {
                   setStatusFilter("all");
                   setStockFilter("all");
                 }}
-                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                className="h-10 px-4 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800/50 text-muted-foreground hover:text-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
               >
                 Clear Filters
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-        <CardContent className="p-0">
+        <div className="p-0">
           {loading ? (
             <div className="flex h-96 flex-col items-center justify-center space-y-4">
               <div className="relative">
@@ -387,38 +387,38 @@ export default function ProductsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse min-w-[1000px]">
-                <thead>
-                  <tr className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b">
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 w-[300px]">
+                <thead className="bg-zinc-50/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 w-[300px]">
                       Product
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       Brand
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       Category
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       Status
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 w-[150px]">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 w-[150px]">
                       Stock Status
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       Sale Price
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       Inventory Value
                     </th>
-                    <th className="px-6 py-3 font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       Last Updated
                     </th>
-                    <th className="px-6 py-3 font-semibold text-right whitespace-nowrap">
+                    <th className="px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-zinc-500 dark:text-zinc-400 text-right whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                <tbody className="divide-y divide-zinc-200 border-b border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800 bg-white dark:bg-zinc-950">
                   {filteredProducts.map((product) => {
                     const effectiveStock = getEffectiveStock(product);
                     const isLowStock =
@@ -428,11 +428,11 @@ export default function ProductsPage() {
                     return (
                       <tr
                         key={product.id}
-                        className="group transition-all hover:bg-zinc-50/80 dark:hover:bg-zinc-900/80"
+                        className="group transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                       >
                         <td className="px-6 py-3">
                           <div className="flex items-center gap-4">
-                            <Avatar className="h-10 w-10 min-w-10 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 group-hover:scale-110 transition-transform duration-300">
+                            <Avatar className="h-11 w-11 min-w-11 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 group-hover:shadow-md transition-all duration-300 bg-white">
                               <AvatarImage
                                 src={product.mainImage}
                                 alt={product.name}
@@ -443,24 +443,24 @@ export default function ProductsPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span className="font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
+                              <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 leading-tight">
                                 {product.name}
                               </span>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                <span className="text-xs text-muted-foreground font-mono">
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                <span className="text-[11px] font-medium text-muted-foreground font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md">
                                   {product.sku}
                                 </span>
                                 {product.tags?.slice(0, 2).map((tag) => (
                                   <Badge
                                     key={tag}
                                     variant="outline"
-                                    className="text-[10px] px-1.5 h-4 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+                                    className="text-[10px] px-1.5 py-0 h-4 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 font-medium text-zinc-500 cursor-default"
                                   >
                                     {tag}
                                   </Badge>
                                 ))}
                                 {(product.tags?.length || 0) > 2 && (
-                                  <span className="text-[10px] text-muted-foreground">
+                                  <span className="text-[10px] text-muted-foreground font-medium">
                                     +{(product.tags?.length || 0) - 2}
                                   </span>
                                 )}
@@ -469,14 +469,14 @@ export default function ProductsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-3">
-                          <span className="text-sm text-muted-foreground italic whitespace-nowrap">
+                          <span className="text-[13px] font-medium text-muted-foreground whitespace-nowrap">
                             {product.brand?.name || "-"}
                           </span>
                         </td>
                         <td className="px-6 py-3">
                           <Badge
                             variant="secondary"
-                            className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none px-3 py-1 whitespace-nowrap"
+                            className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none px-2.5 py-0.5 rounded-md text-xs font-medium whitespace-nowrap"
                           >
                             {product.category?.name || "General"}
                           </Badge>
@@ -485,29 +485,29 @@ export default function ProductsPage() {
                           <Badge
                             variant={product.isActive ? "default" : "outline"}
                             className={cn(
-                              "px-3 py-1 border-none whitespace-nowrap",
+                              "px-2.5 py-0.5 rounded-md border-none whitespace-nowrap text-xs font-medium",
                               product.isActive
-                                ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
-                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 hover:bg-emerald-200"
+                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200"
                             )}
                           >
                             {product.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </td>
                         <td className="px-6 py-3">
-                          <div className="flex flex-col gap-1.5">
+                          <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                               <div
-                                className={`h-2.5 w-2.5 rounded-full ${
+                                className={`h-2 w-2 rounded-full ${
                                   isOutOfStock
                                     ? "bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]"
                                     : isLowStock
-                                      ? "bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                                      ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
                                       : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                                 }`}
                               />
                               <span
-                                className={`font-bold text-sm whitespace-nowrap ${
+                                className={`font-semibold text-[13px] whitespace-nowrap ${
                                   isOutOfStock
                                     ? "text-destructive"
                                     : isLowStock
@@ -522,13 +522,13 @@ export default function ProductsPage() {
                                     : "In Stock"}
                               </span>
                             </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            <span className="text-[11px] font-medium text-muted-foreground whitespace-nowrap pl-4">
                               {effectiveStock} {product.unit} available
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-3">
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                          <span className="font-semibold text-[14px] text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                             $
                             {product.salePrice.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
@@ -536,14 +536,14 @@ export default function ProductsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-3">
-                          <span className="text-sm font-medium text-zinc-500 whitespace-nowrap">
+                          <span className="text-[13px] font-medium text-zinc-500 whitespace-nowrap">
                             $
                             {(effectiveStock * product.salePrice).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                             })}
                           </span>
                         </td>
-                        <td className="px-6 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                        <td className="px-6 py-3 text-[13px] text-muted-foreground whitespace-nowrap">
                           {format(new Date(product.updatedAt), "MMM d, yyyy")}
                         </td>
                         <td className="px-6 py-3 text-right">
@@ -551,10 +551,10 @@ export default function ProductsPage() {
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
-                                className="h-9 w-9 p-0 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                                className="h-8 w-8 p-0 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                               >
                                 <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-5 w-5" />
+                                <MoreHorizontal className="h-4 w-4 text-zinc-500" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
@@ -566,7 +566,7 @@ export default function ProductsPage() {
                               </DropdownMenuLabel>
                               <DropdownMenuSeparator className="my-1" />
                               <Link href={`/products/${product.id}/edit`}>
-                                <DropdownMenuItem className="cursor-pointer rounded-lg gap-3 py-2 text-sm font-medium">
+                                <DropdownMenuItem className="cursor-pointer rounded-lg gap-3 py-2 text-sm font-medium focus:bg-zinc-100 dark:focus:bg-zinc-800">
                                   <Edit className="h-4 w-4 text-zinc-500" /> Edit Product
                                 </DropdownMenuItem>
                               </Link>
@@ -586,8 +586,8 @@ export default function ProductsPage() {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

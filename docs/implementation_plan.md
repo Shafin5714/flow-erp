@@ -322,7 +322,7 @@ flow-erp/
 - [x] Sale & SaleItem Prisma models
 
 **Client (Frontend):**
-- [ ] Client-side GraphQL operations for sales (`lib/graphql/sales.ts`)
+- [x] Client-side GraphQL operations for sales (`lib/graphql/sales.ts`)
 - [ ] Sales list page (`sales/page.tsx`)
 - [ ] POS interface design & layout
 - [ ] Product search/scan for POS
@@ -334,7 +334,7 @@ flow-erp/
 - [ ] Automatic stock deduction on sale
 - [ ] Sales history with search & filtering
 - [ ] Sales return/refund handling
-- [ ] Sidebar navigation update for Sales
+- [x] Sidebar navigation update for Sales
 
 ---
 
@@ -346,7 +346,7 @@ flow-erp/
 - [x] Customer Prisma model
 
 **Client (Frontend):**
-- [ ] Client-side GraphQL operations for customers (`lib/graphql/customers.ts`)
+- [x] Client-side GraphQL operations for customers (`lib/graphql/customers.ts`)
 - [ ] Customer list page (`customers/page.tsx`)
 - [ ] Customer form (create/edit)
 - [ ] Customer detail view

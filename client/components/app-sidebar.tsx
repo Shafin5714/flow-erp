@@ -73,8 +73,11 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: "Sales",
-    href: "/sales",
     icon: DollarSign,
+    items: [
+      { title: "All Sales", href: "/sales" },
+      { title: "POS", href: "/sales/pos" },
+    ],
   },
   {
     title: "Customers",

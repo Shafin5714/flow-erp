@@ -323,16 +323,16 @@ flow-erp/
 
 **Client (Frontend):**
 - [x] Client-side GraphQL operations for sales (`lib/graphql/sales.ts`)
-- [ ] Sales list page (`sales/page.tsx`)
-- [ ] POS interface design & layout
-- [ ] Product search/scan for POS
-- [ ] Cart management component
-- [ ] Customer selection in POS
-- [ ] Payment processing (cash, due)
+- [x] Sales list page (`sales/page.tsx`)
+- [x] POS interface design & layout
+- [x] Product search/scan for POS
+- [x] Cart management component
+- [x] Customer selection in POS
+- [x] Payment processing (cash, due)
 - [ ] Invoice generation & preview
 - [ ] Invoice print functionality
-- [ ] Automatic stock deduction on sale
-- [ ] Sales history with search & filtering
+- [x] Automatic stock deduction on sale
+- [x] Sales history with search & filtering
 - [ ] Sales return/refund handling
 - [x] Sidebar navigation update for Sales
 

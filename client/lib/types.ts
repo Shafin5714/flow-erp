@@ -93,3 +93,40 @@ export interface Purchase {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  balance: number;
+  createdAt: string;
+  updatedAt: string;
+  sales?: Sale[];
+  transactions?: unknown[];
+}
+
+export interface SaleItem {
+  id: string;
+  product: Product;
+  variant?: ProductVariant;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface Sale {
+  id: string;
+  invoiceNumber: string;
+  customer?: Customer;
+  items: SaleItem[];
+  subtotal: number;
+  discount: number;
+  total: number;
+  paymentMode: "CASH" | "DUE";
+  paidAmount: number;
+  dueAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}

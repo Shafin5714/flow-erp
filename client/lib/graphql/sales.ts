@@ -67,7 +67,39 @@ export const CREATE_SALE = gql`
     createSale(input: $input) {
       id
       invoiceNumber
+      customer {
+        id
+        name
+        email
+        phone
+        address
+      }
+      items {
+        id
+        product {
+          id
+          name
+        }
+        variant {
+          id
+          name
+        }
+        quantity
+        unitPrice
+        total
+      }
+      subtotal
+      discount
       total
+      paymentMode
+      paidAmount
+      dueAmount
+      createdAt
+      updatedAt
+      createdBy {
+        id
+        name
+      }
     }
   }
 `;

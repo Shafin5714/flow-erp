@@ -17,9 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flow-ERP | Mini ERP System",
-  description:
-    "A modern Mini ERP application for managing inventory, sales, purchases, and accounting",
+  title: "Flow-ERP | ERP System",
+  description: "A full-stack ERP system for managing inventory, sales, purchases, and accounting",
 };
 
 export default function RootLayout({

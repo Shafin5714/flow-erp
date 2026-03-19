@@ -1,6 +1,6 @@
 # Flow-ERP
 
-A modern, full-stack Mini ERP application with separate client and server architecture.
+A full-stack ERP system built with Next.js and GraphQL, featuring seamless inventory management, POS workflows, and comprehensive accounting capabilities.
 
 ## Tech Stack
 

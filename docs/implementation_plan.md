@@ -1,12 +1,12 @@
 # Flow-ERP Implementation Plan
 
-A comprehensive implementation plan for the Flow-ERP Mini ERP System with **separate Client and Server architecture**.
+A comprehensive implementation plan for the Flow-ERP System with **separate Client and Server architecture**.
 
 ---
 
 ## 1. Project Overview
 
-**Flow-ERP** is a modern, full-stack Mini ERP application designed to manage core business operations including Inventory, Sales, Purchases, Accounting, Customers, Vendors, and Reporting.
+**Flow-ERP** is a full-stack ERP system designed to manage core business operations including Inventory, Sales, Purchases, Accounting, Customers, Vendors, and Reporting.
 
 > [!IMPORTANT]
 > **Architecture Change**: This project uses a separated client/server architecture with Express + Apollo Server for the backend and Next.js for the frontend. Both run as independent applications and communicate via GraphQL.

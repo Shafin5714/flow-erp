@@ -1,6 +1,6 @@
 # Flow-ERP
 
-**Mini ERP System using Next.js & GraphQL**
+**ERP System using Next.js & GraphQL**
 
 ---
 
@@ -211,7 +211,7 @@ GraphQL will aggregate multiple datasets in **one query**.
 
 ## 11. Summary
 
-Flow-ERP is a **portfolio-grade Mini ERP system** showcasing:
+Flow-ERP is a **portfolio-grade ERP system** showcasing:
 
 - Real-world business logic
 - GraphQL-first API design

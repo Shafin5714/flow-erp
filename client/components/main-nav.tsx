@@ -1,7 +1,8 @@
 "use client";
 
-import { Search, Bell, Settings } from "lucide-react";
+import { Search, Bell, Settings, Store } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,28 @@ export function MainNav({ className, toggleSidebar, ...props }: MainNavProps) {
       </div>
 
       <div className="flex items-center gap-1.5 md:gap-3">
+        {/* POS Button */}
+        <Link href="/pos" passHref legacyBehavior>
+          <Button
+            variant="default"
+            size="sm"
+            className="hidden md:flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-lg font-medium transition-all shadow-primary/20 hover:shadow-primary/40 leading-none h-10 px-4"
+          >
+            <Store className="h-4 w-4" />
+            <span>POS System</span>
+          </Button>
+        </Link>
+        <Link href="/pos" passHref legacyBehavior>
+          <Button
+            variant="default"
+            size="icon"
+            className="flex md:hidden bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-full h-10 w-10"
+          >
+            <Store className="h-4 w-4" />
+            <span className="sr-only">POS System</span>
+          </Button>
+        </Link>
+
         {/* Settings Icon - Desktop only */}
         <Button
           variant="ghost"

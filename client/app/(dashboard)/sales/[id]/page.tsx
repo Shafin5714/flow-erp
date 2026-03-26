@@ -1,7 +1,10 @@
 "use client";
 
 import { useQuery } from "@apollo/client";
+import { useState, useEffect } from "react";
 import { GET_SALE } from "@/lib/graphql/sales";
+import { pdf } from "@react-pdf/renderer";
+import { InvoicePDF } from "@/components/sales/InvoicePDF";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,6 +38,27 @@ export default function SaleDetailsPage() {
   const { data, loading, error } = useQuery(GET_SALE, {
     variables: { id },
   });
+
+  const [isClient, setIsClient] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const handleOpenPDF = async () => {
+    if (!data?.sale) return;
+    try {
+      setIsGeneratingPDF(true);
+      const blob = await pdf(<InvoicePDF sale={data.sale} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (err) {
+      console.error("Failed to generate PDF", err);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -108,12 +132,19 @@ export default function SaleDetailsPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <Button
-            className="rounded-full h-11 px-8 shadow-lg font-bold"
-            onClick={() => window.print()}
-          >
-            Print Invoice
-          </Button>
+          {isClient ? (
+            <Button
+              className="rounded-full h-11 px-8 shadow-lg font-bold"
+              onClick={handleOpenPDF}
+              disabled={isGeneratingPDF}
+            >
+              {isGeneratingPDF ? "Preparing PDF..." : "Print / View PDF"}
+            </Button>
+          ) : (
+            <Button disabled className="rounded-full h-11 px-8 shadow-lg font-bold">
+              Preparing PDF...
+            </Button>
+          )}
         </div>
       </div>
 

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_PRODUCTS } from "@/lib/graphql/products";
 import { GET_CUSTOMERS, CREATE_CUSTOMER } from "@/lib/graphql/customers";
 import { CREATE_SALE } from "@/lib/graphql/sales";
-import { useReactToPrint } from "react-to-print";
-import { Invoice } from "@/components/sales/invoice";
+import { pdf } from "@react-pdf/renderer";
+import { InvoicePDF } from "@/components/sales/InvoicePDF";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -94,11 +94,21 @@ export default function POSPage() {
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [lastSale, setLastSale] = useState<Sale | null>(null);
-  const invoiceRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-  const handlePrint = useReactToPrint({
-    contentRef: invoiceRef,
-  });
+  const handlePrint = async () => {
+    if (!lastSale) return;
+    try {
+      setIsGeneratingPDF(true);
+      const blob = await pdf(<InvoicePDF sale={lastSale} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (err) {
+      console.error("Failed to generate PDF", err);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   // Customer combobox state
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -753,7 +763,10 @@ export default function POSPage() {
           <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-zinc-100 dark:bg-zinc-900">
             {lastSale && (
               <div className="bg-white dark:bg-white rounded-2xl shadow-xl overflow-hidden print:shadow-none mx-auto border border-zinc-200 dark:border-zinc-100">
-                <Invoice ref={invoiceRef} sale={lastSale} />
+                {/* We no longer render the HTML invoice here; it's generated as PDF */}
+                <div className="p-8 text-center text-muted-foreground">
+                  Invoice generated successfully. Click Print to view/download the PDF.
+                </div>
               </div>
             )}
           </div>
@@ -783,8 +796,9 @@ export default function POSPage() {
               <Button
                 className="flex-1 sm:flex-none rounded-lg items-center gap-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-primary dark:hover:bg-primary/90 shadow-lg"
                 onClick={() => handlePrint()}
+                disabled={isGeneratingPDF}
               >
-                <Printer className="h-4 w-4" /> Print Invoice
+                <Printer className="h-4 w-4" /> {isGeneratingPDF ? "Preparing..." : "Print Invoice"}
               </Button>
             </div>
           </DialogFooter>

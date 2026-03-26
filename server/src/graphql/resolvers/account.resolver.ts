@@ -132,6 +132,21 @@ export const accountResolvers = {
           data: { balance: { increment: balanceChange } },
         });
 
+        // Update vendor balance if transaction is associated with a vendor
+        // EXPENSE (payment to vendor) decreases balance (what we owe them)
+        // INCOME (refund from vendor) increases balance
+        if (input.vendorId) {
+          const vendorBalanceChange =
+            input.type === "EXPENSE" ? -input.amount : input.type === "INCOME" ? input.amount : 0;
+
+          if (vendorBalanceChange !== 0) {
+            await tx.vendor.update({
+              where: { id: input.vendorId },
+              data: { balance: { increment: vendorBalanceChange } },
+            });
+          }
+        }
+
         return newTransaction;
       });
 

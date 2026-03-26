@@ -6,10 +6,12 @@ import bcrypt from "bcryptjs";
 import { seedCategories } from "./seeders/categories.js";
 import { seedBrands } from "./seeders/brands.js";
 import { seedProducts } from "./seeders/products.js";
+import { seedVendors } from "./seeders/index.js";
 
 // Initialize Prisma with pg adapter (matching db.ts pattern)
 const connectionString = process.env.DATABASE_URL!;
 const pool = new Pool({ connectionString });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter });
 
@@ -75,6 +77,9 @@ async function main() {
 
   // 3. Seed Brands
   await seedBrands(prisma);
+
+  // 3.5 Seed Vendors
+  await seedVendors(prisma);
 
   // 4. Seed Products (depends on categories & brands)
   await seedProducts(prisma);

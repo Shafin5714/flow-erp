@@ -39,7 +39,7 @@ export const GET_VENDOR = gql`
         id
         amount
         type
-        date
+        createdAt
       }
     }
   }

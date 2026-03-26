@@ -303,14 +303,14 @@ flow-erp/
 - [ ] Purchase list page (`purchases/page.tsx`)
 - [ ] Create purchase order page (`purchases/new/page.tsx`)
 - [ ] Edit purchase order page
-- [ ] Purchase detail/view page
+- [x] Purchase detail/view page
 - [x] Vendor list page (`purchases/vendors/page.tsx`)
 - [x] Vendor form (create/edit)
-- [ ] Vendor detail view with purchase history
+- [x] Vendor detail view with purchase history
 - [ ] Stock increment on purchase confirmation
-- [ ] Vendor payment tracking
+- [x] Vendor payment tracking
 - [x] Sidebar navigation update for Purchases
-- [ ] Purchase order PDF/print
+- [x] Purchase order PDF/print
 
 ---
 

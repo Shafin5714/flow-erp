@@ -3,6 +3,9 @@ import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { seedCategories } from "./seeders/categories.js";
+import { seedBrands } from "./seeders/brands.js";
+import { seedProducts } from "./seeders/products.js";
 
 // Initialize Prisma with pg adapter (matching db.ts pattern)
 const connectionString = process.env.DATABASE_URL!;
@@ -41,6 +44,8 @@ const seedUsers: SeedUser[] = [
 async function main() {
   console.log("🌱 Seeding database...\n");
 
+  // 1. Seed Users
+  console.log("👤 Seeding users...\n");
   for (const user of seedUsers) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
 
@@ -63,8 +68,18 @@ async function main() {
       `  ✅ ${createdUser.role.padEnd(7)} → ${createdUser.email} (password: ${user.password})`
     );
   }
+  console.log();
 
-  console.log("\n🎉 Seeding complete!");
+  // 2. Seed Categories
+  await seedCategories(prisma);
+
+  // 3. Seed Brands
+  await seedBrands(prisma);
+
+  // 4. Seed Products (depends on categories & brands)
+  await seedProducts(prisma);
+
+  console.log("🎉 Seeding complete!");
 }
 
 main()

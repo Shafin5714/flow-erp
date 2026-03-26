@@ -39,6 +39,27 @@ export const productResolvers = {
     ) => {
       if (!user) throw new Error("Unauthorized");
 
+      if (filter?.lowStockOnly) {
+        // Cannot compare two columns in Prisma where clause, use raw SQL
+        const conditions: string[] = ['stock <= "lowStockThreshold"'];
+        const values: unknown[] = [];
+
+        if (filter.search) {
+          conditions.push("(name ILIKE $1 OR sku ILIKE $1)");
+          values.push(`%${filter.search}%`);
+        }
+        if (filter.categoryId) {
+          conditions.push(`"categoryId" = $${values.length + 1}`);
+          values.push(filter.categoryId);
+        }
+
+        const whereClause = conditions.join(" AND ");
+        return prisma.$queryRawUnsafe(
+          `SELECT * FROM "Product" WHERE ${whereClause} ORDER BY name ASC`,
+          ...values
+        );
+      }
+
       const where: Record<string, unknown> = {};
 
       if (filter?.search) {
@@ -52,10 +73,6 @@ export const productResolvers = {
         where.categoryId = filter.categoryId;
       }
 
-      if (filter?.lowStockOnly) {
-        where.stock = { lte: prisma.$queryRaw`"lowStockThreshold"` };
-      }
-
       return prisma.product.findMany({
         where,
         orderBy: { name: "asc" },
@@ -67,9 +84,7 @@ export const productResolvers = {
     },
     lowStockProducts: async (_: unknown, __: unknown, { prisma, user }: Context) => {
       if (!user) throw new Error("Unauthorized");
-      return prisma.$queryRaw`
-        SELECT * FROM "Product" WHERE stock <= "lowStockThreshold"
-      `;
+      return prisma.$queryRawUnsafe('SELECT * FROM "Product" WHERE stock <= "lowStockThreshold"');
     },
   },
   Mutation: {

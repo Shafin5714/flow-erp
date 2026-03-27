@@ -249,9 +249,9 @@ flow-erp/
 - [x] Stats cards component (`dashboard/stats-cards.tsx`)
 - [x] Overview chart component (`dashboard/overview.tsx`)
 - [x] Recent sales component (`dashboard/recent-sales.tsx`)
-- [ ] Low-stock alerts widget
-- [ ] Daily/monthly summary cards with date range filtering
-- [ ] Connect dashboard to real GraphQL data (wire up stats)
+- [x] Low-stock alerts widget
+- [x] Daily/monthly summary cards with date range filtering
+- [x] Connect dashboard to real GraphQL data (wire up stats)
 
 ---
 
@@ -403,7 +403,7 @@ flow-erp/
 | Project Setup           |       ✅         |        ✅         | **Complete**        |
 | Authentication          |       ✅         |        🟡         | **Mostly Complete** |
 | Data Models & Schema    |       ✅         |        ✅         | **Complete**        |
-| Dashboard               |       ✅         |        🟡         | **Partially Done**  |
+| Dashboard               |       ✅         |        ✅         | **Complete**        |
 | Products / Inventory    |       ✅         |        ✅         | **Complete**        |
 | Purchase Management     |       ✅         |        ✅         | **Complete**        |
 | Sales & POS             |       ✅         |        ✅         | **Complete**        |
@@ -495,7 +495,7 @@ export const apolloClient = new ApolloClient({
 | Phase 1   | Project Foundation & Setup        | 2-3 days           | ✅ Complete     |
 | Phase 2   | Authentication & Authorization    | 2-3 days           | 🟡 Mostly Done |
 | Phase 3   | Core Data Models & GraphQL Schema | 2-3 days           | ✅ Complete     |
-| Phase 4.1 | Dashboard Module                  | 2-3 days           | 🟡 Partial     |
+| Phase 4.1 | Dashboard Module                  | 2-3 days           | ✅ Complete     |
 | Phase 4.2 | Product / Inventory Management    | 3-4 days           | ✅ Complete     |
 | Phase 4.3 | Purchase Management               | 2-3 days           | ✅ Complete     |
 | Phase 4.4 | Sales & POS                       | 4-5 days           | ✅ Complete     |
@@ -661,7 +661,7 @@ npm run dev
 - [x] File upload to Cloudinary working
 - [ ] All core modules' frontend built & functional
 - [ ] GraphQL API properly secured with comprehensive RBAC
-- [ ] Dashboard aggregates real data via GraphQL
+- [x] Dashboard aggregates real data via GraphQL
 - [ ] Stock calculations accurate across sales/purchases
 - [ ] Accounting entries auto-generated from sales/purchases
 - [ ] Reports display accurate data

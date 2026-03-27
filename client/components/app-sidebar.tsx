@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Moon,
   LucideIcon,
+  Landmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -83,6 +84,14 @@ const mainNavItems: NavItem[] = [
     title: "Customers",
     href: "/customers",
     icon: Users,
+  },
+  {
+    title: "Accounting",
+    icon: Landmark,
+    items: [
+      { title: "Dashboard", href: "/accounts/dashboard" },
+      { title: "Chart of Accounts", href: "/accounts" },
+    ],
   },
   {
     title: "Reports",

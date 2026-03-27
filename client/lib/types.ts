@@ -70,7 +70,26 @@ export interface Vendor {
   createdAt: string;
   updatedAt: string;
   purchases?: Purchase[];
-  transactions?: unknown[];
+  transactions?: AccountTransaction[];
+}
+
+export interface Account {
+  id: string;
+  name: string;
+  type: "CASH" | "BANK" | "CAPITAL" | "LOAN";
+  balance: number;
+}
+
+export interface AccountTransaction {
+  id: string;
+  type: "INCOME" | "EXPENSE" | "CAPITAL" | "LOAN";
+  amount: number;
+  description?: string;
+  reference?: string;
+  createdAt: string;
+  account: Account;
+  vendor?: Vendor;
+  customer?: Customer;
 }
 
 export interface PurchaseItem {
@@ -104,7 +123,7 @@ export interface Customer {
   createdAt: string;
   updatedAt: string;
   sales?: Sale[];
-  transactions?: unknown[];
+  transactions?: AccountTransaction[];
 }
 
 export interface SaleItem {

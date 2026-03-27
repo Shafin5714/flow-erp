@@ -24,6 +24,26 @@ export const GET_CUSTOMER = gql`
       balance
       createdAt
       updatedAt
+      sales {
+        id
+        invoiceNumber
+        total
+        paymentMode
+        dueAmount
+        createdAt
+      }
+      transactions {
+        id
+        type
+        amount
+        description
+        reference
+        createdAt
+        account {
+          id
+          name
+        }
+      }
     }
   }
 `;

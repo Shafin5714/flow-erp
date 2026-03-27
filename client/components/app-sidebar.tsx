@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Package,
-  ShoppingCart,
   DollarSign,
   Users,
   FileText,
@@ -52,15 +51,6 @@ const mainNavItems: NavItem[] = [
       { title: "Add Product", href: "/products/new" },
       { title: "Categories", href: "/products/categories" },
       { title: "Brands", href: "/products/brands" },
-    ],
-  },
-  {
-    title: "Orders",
-    icon: ShoppingCart,
-    items: [
-      { title: "All Orders", href: "/orders" },
-      { title: "Returns", href: "/orders/returns" },
-      { title: "Order Tracking", href: "/orders/tracking" },
     ],
   },
   {
@@ -136,10 +126,7 @@ function NavMenu({
   isCollapsed?: boolean;
 }) {
   const pathname = usePathname();
-  // Keep Orders expanded by default to match image
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    Orders: true,
-  });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (title: string) => {
     setExpanded((prev) => ({ ...prev, [title]: !prev[title] }));

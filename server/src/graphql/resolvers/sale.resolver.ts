@@ -13,6 +13,7 @@ interface CreateSaleInput {
   discount?: number;
   paymentMode: "CASH" | "DUE";
   paidAmount: number;
+  accountId?: string;
 }
 
 export const saleResolvers = {
@@ -123,6 +124,24 @@ export const saleResolvers = {
           await tx.customer.update({
             where: { id: input.customerId },
             data: { balance: { increment: dueAmount } },
+          });
+        }
+
+        // Auto-record ledger entry if money was paid to an account
+        if (input.paidAmount > 0 && input.accountId) {
+          await tx.accountTransaction.create({
+            data: {
+              accountId: input.accountId,
+              type: "INCOME",
+              amount: input.paidAmount,
+              description: `Sale ${invoiceNumber}`,
+              reference: invoiceNumber,
+              customerId: input.customerId || undefined,
+            },
+          });
+          await tx.account.update({
+            where: { id: input.accountId },
+            data: { balance: { increment: input.paidAmount } },
           });
         }
 

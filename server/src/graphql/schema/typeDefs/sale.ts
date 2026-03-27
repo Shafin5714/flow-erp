@@ -39,6 +39,7 @@ export const saleTypeDefs = gql`
     discount: Float
     paymentMode: PaymentMode!
     paidAmount: Float!
+    accountId: String
   }
 
   extend type Query {

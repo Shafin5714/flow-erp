@@ -42,6 +42,9 @@ export default function POSPage() {
         dueAmount={pos.dueAmount}
         creatingSale={pos.creatingSale}
         handleCheckout={pos.handleCheckout}
+        accounts={pos.accounts}
+        selectedAccountId={pos.selectedAccountId}
+        setSelectedAccountId={pos.setSelectedAccountId}
       />
 
       <NewCustomerDialog

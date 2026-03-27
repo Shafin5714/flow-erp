@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@apollo/client";
 import { GET_PRODUCTS } from "@/lib/graphql/products";
 import { GET_CUSTOMERS, CREATE_CUSTOMER } from "@/lib/graphql/customers";
 import { CREATE_SALE } from "@/lib/graphql/sales";
+import { GET_ACCOUNTS } from "@/lib/graphql/accounts";
 import { Product, Customer, ProductVariant, Sale } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -34,6 +35,9 @@ export function usePOS() {
   const [createSale, { loading: creatingSale }] = useMutation(CREATE_SALE);
   const [createCustomer, { loading: creatingCustomer }] = useMutation(CREATE_CUSTOMER);
 
+  // Accounts query for ledger integration
+  const { data: accountsData } = useQuery(GET_ACCOUNTS);
+
   // State
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -43,6 +47,7 @@ export function usePOS() {
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [lastSale, setLastSale] = useState<Sale | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
   // Customer combobox state
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -55,6 +60,13 @@ export function usePOS() {
   // Memos
   const products = useMemo<Product[]>(() => productsData?.products || [], [productsData]);
   const customers = useMemo<Customer[]>(() => customersData?.customers || [], [customersData]);
+
+  interface AccountItem {
+    id: string;
+    name: string;
+    type: string;
+  }
+  const accounts = useMemo<AccountItem[]>(() => accountsData?.accounts || [], [accountsData]);
 
   const selectedCustomer = useMemo(
     () => customers.find((c) => c.id === selectedCustomerId),
@@ -135,6 +147,7 @@ export function usePOS() {
     setSelectedCustomerId("");
     setPaymentMode("CASH");
     setPaidAmount(0);
+    setSelectedAccountId("");
   };
 
   const handleCheckout = async () => {
@@ -169,6 +182,7 @@ export function usePOS() {
             discount,
             paymentMode,
             paidAmount: clampedPaidAmount,
+            accountId: selectedAccountId || null,
           },
         },
       });
@@ -269,5 +283,10 @@ export function usePOS() {
     invoiceOpen,
     setInvoiceOpen,
     lastSale,
+
+    // Account selection for ledger
+    accounts,
+    selectedAccountId,
+    setSelectedAccountId,
   };
 }

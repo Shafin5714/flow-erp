@@ -33,6 +33,7 @@ export const purchaseTypeDefs = gql`
     vendorId: String!
     items: [PurchaseItemInput!]!
     paidAmount: Float!
+    accountId: String
   }
 
   input UpdatePurchaseInput {

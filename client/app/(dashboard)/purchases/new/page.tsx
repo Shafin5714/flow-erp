@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "@apollo/client";
 import { GET_VENDORS } from "@/lib/graphql/vendors";
 import { GET_PRODUCTS } from "@/lib/graphql/products";
 import { CREATE_PURCHASE, GET_PURCHASES } from "@/lib/graphql/purchases";
+import { GET_ACCOUNTS } from "@/lib/graphql/accounts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2, Save, ArrowLeft, ShoppingCart, DollarSign } from "lucide-react";
+import { Plus, Trash2, Save, ArrowLeft, ShoppingCart, DollarSign, Landmark } from "lucide-react";
 import { Product, Vendor, ProductVariant } from "@/lib/types";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -40,6 +41,7 @@ export default function CreatePurchasePage() {
   const router = useRouter();
   const { data: vendorsData } = useQuery(GET_VENDORS);
   const { data: productsData } = useQuery(GET_PRODUCTS);
+  const { data: accountsData } = useQuery(GET_ACCOUNTS);
 
   const [createPurchase, { loading: isSubmitting }] = useMutation(CREATE_PURCHASE, {
     onCompleted: () => {
@@ -60,6 +62,9 @@ export default function CreatePurchasePage() {
 
   const vendors = vendorsData?.vendors || [];
   const products = productsData?.products || [];
+  const accounts = accountsData?.accounts || [];
+
+  const [selectedAccountId, setSelectedAccountId] = useState("");
 
   const addItem = () => {
     setItems([...items, { productId: "", variantId: "", quantity: 1, unitPrice: 0 }]);
@@ -119,6 +124,7 @@ export default function CreatePurchasePage() {
     const input = {
       vendorId,
       paidAmount: Number(paidAmount),
+      accountId: selectedAccountId || undefined,
       items: validItems.map((item) => ({
         productId: item.productId,
         variantId: item.variantId || undefined,
@@ -338,6 +344,24 @@ export default function CreatePurchasePage() {
                       className="h-11 pl-7 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm focus:ring-primary font-bold text-lg"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 flex items-center gap-1">
+                    <Landmark className="h-3 w-3" /> Payment Account
+                  </label>
+                  <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                    <SelectTrigger className="w-full h-11 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 focus:ring-primary">
+                      <SelectValue placeholder="Select account (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc: { id: string; name: string; type: string }) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name} ({acc.type})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

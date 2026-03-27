@@ -11,6 +11,7 @@ interface CreatePurchaseInput {
   vendorId: string;
   items: PurchaseItemInput[];
   paidAmount: number;
+  accountId?: string;
 }
 
 export const purchaseResolvers = {
@@ -108,6 +109,24 @@ export const purchaseResolvers = {
           await tx.vendor.update({
             where: { id: input.vendorId },
             data: { balance: { increment: dueAmount } },
+          });
+        }
+
+        // Auto-record ledger entry if money was paid from an account
+        if (input.paidAmount > 0 && input.accountId) {
+          await tx.accountTransaction.create({
+            data: {
+              accountId: input.accountId,
+              type: "EXPENSE",
+              amount: input.paidAmount,
+              description: `Purchase from vendor`,
+              reference: newPurchase.id,
+              vendorId: input.vendorId,
+            },
+          });
+          await tx.account.update({
+            where: { id: input.accountId },
+            data: { balance: { decrement: input.paidAmount } },
           });
         }
 

@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -25,6 +32,7 @@ import {
   Plus,
   CreditCard,
   Receipt,
+  Landmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +59,9 @@ interface CartSidebarProps {
   dueAmount: number;
   creatingSale: boolean;
   handleCheckout: () => void;
+  accounts: { id: string; name: string; type: string }[];
+  selectedAccountId: string;
+  setSelectedAccountId: (id: string) => void;
 }
 
 export function CartSidebar({
@@ -76,6 +87,9 @@ export function CartSidebar({
   dueAmount,
   creatingSale,
   handleCheckout,
+  accounts,
+  selectedAccountId,
+  setSelectedAccountId,
 }: CartSidebarProps) {
   return (
     <div className="w-[400px] flex flex-col bg-white dark:bg-zinc-900 shadow-2xl z-10">
@@ -285,6 +299,25 @@ export function CartSidebar({
             <span>Total</span>
             <span className="text-primary">${total.toLocaleString()}</span>
           </div>
+        </div>
+
+        {/* Account Selector */}
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 flex items-center gap-1">
+            <Landmark className="h-3 w-3" /> Payment Account
+          </label>
+          <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+            <SelectTrigger className="w-full h-10 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 focus:ring-primary">
+              <SelectValue placeholder="Select account (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {accounts.map((acc) => (
+                <SelectItem key={acc.id} value={acc.id}>
+                  {acc.name} ({acc.type})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-2">

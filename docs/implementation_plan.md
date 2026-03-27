@@ -365,14 +365,14 @@ flow-erp/
 - [x] Account & AccountTransaction Prisma models
 
 **Client (Frontend):**
-- [ ] Client-side GraphQL operations for accounts (`lib/graphql/accounts.ts`)
-- [ ] Account dashboard page
-- [ ] Account list with balances
-- [ ] Transaction entry form
-- [ ] Ledger view per account
-- [ ] Account statement
-- [ ] Automatic ledger updates from sales/purchases
-- [ ] Income & expense tracking
+- [x] Client-side GraphQL operations for accounts (`lib/graphql/accounts.ts`)
+- [x] Account dashboard page
+- [x] Account list with balances
+- [x] Transaction entry form
+- [x] Ledger view per account
+- [x] Account statement
+- [x] Automatic ledger updates from sales/purchases
+- [x] Income & expense tracking
 
 ---
 
@@ -408,7 +408,7 @@ flow-erp/
 | Purchase Management     |       ✅         |        ❌         | **Backend Only**    |
 | Sales & POS             |       ✅         |        ❌         | **Backend Only**    |
 | Customer Management     |       ✅         |        ❌         | **Backend Only**    |
-| Accounting              |       ✅         |        ❌         | **Backend Only**    |
+| Accounting              |       ✅         |        ✅         | **Complete**        |
 | Reports & Analytics     |       🟡         |        ❌         | **Minimal**         |
 
 > **Legend:** ✅ Complete | 🟡 Partially Done | ❌ Not Started
@@ -420,7 +420,7 @@ flow-erp/
 1. **Purchase Management (Client)** — Build vendor & purchase order pages. Backend is ready.
 2. **Sales & POS (Client)** — Build POS interface & sales pages. Backend is ready.
 3. **Customer Management (Client)** — Build customer pages. Backend is ready.
-4. **Accounting (Client)** — Build account & transaction pages. Backend is ready.
+4. **Accounting (Client)** — Completed!
 5. **Dashboard (Wire Up)** — Connect dashboard widgets to real GraphQL data.
 6. **Reports & Analytics** — Build report pages and server-side report resolvers.
 7. **Auth Enhancements** — Registration page, comprehensive RBAC middleware.

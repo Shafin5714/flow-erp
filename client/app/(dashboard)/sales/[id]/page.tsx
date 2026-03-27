@@ -1,12 +1,29 @@
 "use client";
 
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { GET_SALE } from "@/lib/graphql/sales";
+import { GET_SALE, REFUND_SALE } from "@/lib/graphql/sales";
+import { GET_ACCOUNTS } from "@/lib/graphql/accounts";
 import { pdf } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/sales/InvoicePDF";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Calendar,
@@ -17,6 +34,7 @@ import {
   ShoppingCart,
   DollarSign,
   Package,
+  Undo2,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -30,7 +48,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SaleItem } from "@/lib/types";
+import { SaleItem, Account } from "@/lib/types";
 
 export default function SaleDetailsPage() {
   const params = useParams();
@@ -42,9 +60,37 @@ export default function SaleDetailsPage() {
   const [isClient, setIsClient] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
+  const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
+  const [refundAccountId, setRefundAccountId] = useState("");
+
+  const { data: accountsData } = useQuery(GET_ACCOUNTS);
+  const [refundSale, { loading: isRefunding }] = useMutation(REFUND_SALE, {
+    onCompleted: () => {
+      toast.success("Sale refunded successfully");
+      setIsRefundDialogOpen(false);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to refund sale");
+    },
+    refetchQueries: [{ query: GET_SALE, variables: { id } }],
+  });
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleRefund = () => {
+    if (data?.sale?.paidAmount > 0 && !refundAccountId) {
+      toast.error("Please select an account to refund the money from");
+      return;
+    }
+    refundSale({
+      variables: {
+        id,
+        accountId: refundAccountId || undefined,
+      },
+    });
+  };
 
   const handleOpenPDF = async () => {
     if (!data?.sale) return;
@@ -116,14 +162,22 @@ export default function SaleDetailsPage() {
               <Badge
                 className={cn(
                   "px-3 py-1 rounded-full border-none text-[10px] font-bold uppercase tracking-wider",
-                  sale.dueAmount === 0
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                    : sale.paidAmount > 0
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                      : "bg-destructive/10 text-destructive"
+                  sale.isRefunded
+                    ? "bg-destructive/10 text-destructive"
+                    : sale.dueAmount === 0
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                      : sale.paidAmount > 0
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                        : "bg-destructive/10 text-destructive"
                 )}
               >
-                {sale.dueAmount === 0 ? "Fully Paid" : sale.paidAmount > 0 ? "Partial" : "Unpaid"}
+                {sale.isRefunded
+                  ? "Refunded"
+                  : sale.dueAmount === 0
+                    ? "Fully Paid"
+                    : sale.paidAmount > 0
+                      ? "Partial"
+                      : "Unpaid"}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground font-medium">
@@ -132,6 +186,23 @@ export default function SaleDetailsPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
+          {sale.isRefunded ? (
+            <Badge
+              variant="outline"
+              className="h-11 px-6 text-destructive border-destructive font-bold uppercase tracking-wider flex items-center justify-center"
+            >
+              Refunded
+            </Badge>
+          ) : (
+            <Button
+              variant="outline"
+              className="rounded-full h-11 px-6 shadow-sm font-bold text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setIsRefundDialogOpen(true)}
+            >
+              <Undo2 className="mr-2 h-4 w-4" /> Refund Sale
+            </Button>
+          )}
+
           {isClient ? (
             <Button
               className="rounded-full h-11 px-8 shadow-lg font-bold"
@@ -413,13 +484,67 @@ export default function SaleDetailsPage() {
                   Status
                 </p>
                 <p className="text-sm font-bold mt-1 uppercase tracking-tighter">
-                  {sale.dueAmount === 0 ? "Completed" : "Action Required"}
+                  {sale.isRefunded
+                    ? "Refunded"
+                    : sale.dueAmount === 0
+                      ? "Completed"
+                      : "Action Required"}
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog open={isRefundDialogOpen} onOpenChange={setIsRefundDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Refund Sale</DialogTitle>
+            <DialogDescription>
+              This will restore stock for all items and record an expense ledger entry if money was
+              paid. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {sale.paidAmount > 0 && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Refund From Account</label>
+                <Select value={refundAccountId} onValueChange={setRefundAccountId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accountsData?.accounts?.map((acc: Account) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name} ({acc.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Amount to refund: ${sale.paidAmount.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRefundDialogOpen(false)}
+              disabled={isRefunding}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRefund}
+              disabled={isRefunding || (sale.paidAmount > 0 && !refundAccountId)}
+            >
+              {isRefunding ? "Processing..." : "Confirm Refund"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

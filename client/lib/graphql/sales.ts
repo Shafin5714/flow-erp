@@ -15,6 +15,7 @@ export const GET_SALES = gql`
       paymentMode
       paidAmount
       dueAmount
+      isRefunded
       createdAt
     }
   }
@@ -52,6 +53,7 @@ export const GET_SALE = gql`
       paymentMode
       paidAmount
       dueAmount
+      isRefunded
       createdAt
       updatedAt
       createdBy {
@@ -94,12 +96,30 @@ export const CREATE_SALE = gql`
       paymentMode
       paidAmount
       dueAmount
+      isRefunded
       createdAt
       updatedAt
       createdBy {
         id
         name
       }
+    }
+  }
+`;
+
+export const REFUND_SALE = gql`
+  mutation RefundSale($id: ID!, $accountId: String) {
+    refundSale(id: $id, accountId: $accountId) {
+      id
+      invoiceNumber
+      subtotal
+      discount
+      total
+      paymentMode
+      paidAmount
+      dueAmount
+      isRefunded
+      updatedAt
     }
   }
 `;

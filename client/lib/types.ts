@@ -146,6 +146,7 @@ export interface Sale {
   paymentMode: "CASH" | "DUE";
   paidAmount: number;
   dueAmount: number;
+  isRefunded: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -300,14 +300,14 @@ flow-erp/
 **Client (Frontend):**
 - [x] Client-side GraphQL operations for purchases (`lib/graphql/purchases.ts`)
 - [x] Client-side GraphQL operations for vendors (`lib/graphql/vendors.ts`)
-- [ ] Purchase list page (`purchases/page.tsx`)
-- [ ] Create purchase order page (`purchases/new/page.tsx`)
-- [ ] Edit purchase order page
+- [x] Purchase list page (`purchases/page.tsx`)
+- [x] Create purchase order page (`purchases/new/page.tsx`)
+- [x] Edit purchase order page
 - [x] Purchase detail/view page
 - [x] Vendor list page (`purchases/vendors/page.tsx`)
 - [x] Vendor form (create/edit)
 - [x] Vendor detail view with purchase history
-- [ ] Stock increment on purchase confirmation
+- [x] Stock increment on purchase confirmation
 - [x] Vendor payment tracking
 - [x] Sidebar navigation update for Purchases
 - [x] Purchase order PDF/print
@@ -329,11 +329,11 @@ flow-erp/
 - [x] Cart management component
 - [x] Customer selection in POS
 - [x] Payment processing (cash, due)
-- [ ] Invoice generation & preview
-- [ ] Invoice print functionality
+- [x] Invoice generation & preview
+- [x] Invoice print functionality
 - [x] Automatic stock deduction on sale
 - [x] Sales history with search & filtering
-- [ ] Sales return/refund handling
+- [x] Sales return/refund handling
 - [x] Sidebar navigation update for Sales
 
 ---
@@ -405,8 +405,8 @@ flow-erp/
 | Data Models & Schema    |       ✅         |        ✅         | **Complete**        |
 | Dashboard               |       ✅         |        🟡         | **Partially Done**  |
 | Products / Inventory    |       ✅         |        ✅         | **Complete**        |
-| Purchase Management     |       ✅         |        ❌         | **Backend Only**    |
-| Sales & POS             |       ✅         |        ❌         | **Backend Only**    |
+| Purchase Management     |       ✅         |        ✅         | **Complete**        |
+| Sales & POS             |       ✅         |        ✅         | **Complete**        |
 | Customer Management     |       ✅         |        ✅         | **Complete**        |
 | Accounting              |       ✅         |        ✅         | **Complete**        |
 | Reports & Analytics     |       🟡         |        ❌         | **Minimal**         |
@@ -417,7 +417,7 @@ flow-erp/
 
 ## 6. Recommended Next Steps (Priority Order)
 
-1. **Purchase Management (Client)** — Build vendor & purchase order pages. Backend is ready.
+1. **Purchase Management (Client)** — Completed!
 2. **Sales & POS (Client)** — Build POS interface & sales pages. Backend is ready.
 3. **Customer Management (Client)** — Completed!
 4. **Accounting (Client)** — Completed!
@@ -497,8 +497,8 @@ export const apolloClient = new ApolloClient({
 | Phase 3   | Core Data Models & GraphQL Schema | 2-3 days           | ✅ Complete     |
 | Phase 4.1 | Dashboard Module                  | 2-3 days           | 🟡 Partial     |
 | Phase 4.2 | Product / Inventory Management    | 3-4 days           | ✅ Complete     |
-| Phase 4.3 | Purchase Management               | 2-3 days           | ⏳ Next Up     |
-| Phase 4.4 | Sales & POS                       | 4-5 days           | ⏳ Pending     |
+| Phase 4.3 | Purchase Management               | 2-3 days           | ✅ Complete     |
+| Phase 4.4 | Sales & POS                       | 4-5 days           | ✅ Complete     |
 | Phase 4.5 | Customer Management               | 2-3 days           | ✅ Complete     |
 | Phase 4.6 | Accounting Module                 | 3-4 days           | ⏳ Pending     |
 | Phase 4.7 | Reports & Analytics               | 3-4 days           | ⏳ Pending     |

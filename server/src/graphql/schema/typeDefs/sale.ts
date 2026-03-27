@@ -12,6 +12,7 @@ export const saleTypeDefs = gql`
     paymentMode: PaymentMode!
     paidAmount: Float!
     dueAmount: Float!
+    isRefunded: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
     createdBy: User!
@@ -49,5 +50,6 @@ export const saleTypeDefs = gql`
 
   extend type Mutation {
     createSale(input: CreateSaleInput!): Sale!
+    refundSale(id: ID!, accountId: String): Sale!
   }
 `;

@@ -150,5 +150,74 @@ export const saleResolvers = {
 
       return sale;
     },
+    refundSale: async (
+      _: unknown,
+      { id, accountId }: { id: string; accountId?: string },
+      { prisma, user }: Context
+    ) => {
+      if (!user) throw new Error("Unauthorized");
+      if (user.role !== "ADMIN" && user.role !== "MANAGER") {
+        throw new Error("Only admins and managers can refund sales");
+      }
+
+      const sale = await prisma.sale.findUnique({
+        where: { id },
+        include: { items: true },
+      });
+
+      if (!sale) throw new Error("Sale not found");
+      if (sale.isRefunded) throw new Error("Sale is already refunded");
+
+      return prisma.$transaction(async (tx) => {
+        // 1. Restore stock
+        for (const item of sale.items) {
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+
+        // 2. Reduce customer balance if there was a due amount
+        if (sale.customerId && sale.dueAmount > 0) {
+          await tx.customer.update({
+            where: { id: sale.customerId },
+            data: { balance: { decrement: sale.dueAmount } },
+          });
+        }
+
+        // 3. Create expense ledger if amount was paid
+        if (sale.paidAmount > 0 && accountId) {
+          await tx.accountTransaction.create({
+            data: {
+              accountId,
+              type: "EXPENSE",
+              amount: sale.paidAmount,
+              description: `Refund for Sale ${sale.invoiceNumber}`,
+              reference: sale.invoiceNumber,
+              customerId: sale.customerId || undefined,
+            },
+          });
+          await tx.account.update({
+            where: { id: accountId },
+            data: { balance: { decrement: sale.paidAmount } },
+          });
+        }
+
+        // 4. Update sale as refunded
+        return tx.sale.update({
+          where: { id },
+          data: {
+            isRefunded: true,
+          },
+        });
+      });
+    },
   },
 };

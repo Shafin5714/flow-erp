@@ -3,7 +3,7 @@
 
 import { useQuery } from "@apollo/client";
 import { GET_INVENTORY_REPORT } from "@/lib/graphql/reports";
-import { ReportFilters } from "@/components/reports/report-filters";
+
 import { ReportStatCard } from "@/components/reports/report-stat-card";
 import { BarChart2, PackageSearch, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -60,8 +60,6 @@ export default function InventoryReportPage() {
           </p>
         </div>
       </div>
-
-      <ReportFilters showDateRange={false} />
 
       {loading ? (
         <div className="py-20 text-center animate-pulse text-zinc-500">
@@ -136,7 +134,7 @@ export default function InventoryReportPage() {
                     <Tooltip
                       cursor={{ fill: "transparent" }}
                       contentStyle={{ borderRadius: "8px", border: "none" }}
-                      formatter={(value: number) =>
+                      formatter={(value: any) =>
                         `$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
                       }
                     />
@@ -180,7 +178,7 @@ export default function InventoryReportPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} items`} />
+                    <Tooltip formatter={(value: any) => `${value.toLocaleString()} items`} />
                     <Legend
                       layout="vertical"
                       verticalAlign="middle"

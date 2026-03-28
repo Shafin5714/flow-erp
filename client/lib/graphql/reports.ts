@@ -70,3 +70,59 @@ export const GET_PURCHASE_REPORT = gql`
     }
   }
 `;
+
+export const GET_INVENTORY_REPORT = gql`
+  query GetInventoryReport($categoryId: String, $brandId: String) {
+    inventoryReport(categoryId: $categoryId, brandId: $brandId) {
+      totalProducts
+      totalStock
+      totalCostValue
+      totalRetailValue
+      totalPotentialProfit
+      lowStockCount
+      outOfStockCount
+      items {
+        productId
+        productName
+        sku
+        category
+        stock
+        costPrice
+        salePrice
+        costValue
+        retailValue
+        potentialProfit
+        isLowStock
+      }
+      categoryBreakdown {
+        categoryId
+        categoryName
+        productCount
+        totalStock
+        totalCostValue
+        totalRetailValue
+      }
+    }
+  }
+`;
+
+export const GET_PROFIT_LOSS_REPORT = gql`
+  query GetProfitLossReport($startDate: DateTime!, $endDate: DateTime!) {
+    profitLossReport(startDate: $startDate, endDate: $endDate) {
+      totalIncome
+      costOfGoodsSold
+      grossProfit
+      grossMarginPercent
+      totalExpenses
+      netProfit
+      netMarginPercent
+      monthlyBreakdown {
+        month
+        income
+        cogs
+        expenses
+        netProfit
+      }
+    }
+  }
+`;

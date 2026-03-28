@@ -298,13 +298,213 @@ export const reportResolvers = {
       };
     },
 
-    inventoryReport: async () => {
-      // Placeholder for batch 2
-      throw new Error("Not implemented");
+    inventoryReport: async (
+      _: unknown,
+      { categoryId, brandId }: { categoryId?: string; brandId?: string },
+      { prisma, user }: Context
+    ) => {
+      if (!user)
+        throw new GraphQLError("Unauthorized", { extensions: { code: "UNAUTHENTICATED" } });
+      if (user.role !== "MANAGER" && user.role !== "ADMIN")
+        throw new GraphQLError("Forbidden", { extensions: { code: "FORBIDDEN" } });
+
+      const where: any = {};
+      if (categoryId) where.categoryId = categoryId;
+      if (brandId) where.brandId = brandId;
+
+      const products = await prisma.product.findMany({
+        where,
+        include: { category: true },
+        orderBy: { name: "asc" },
+      });
+
+      const totalProducts = products.length;
+      let totalStock = 0;
+      let totalCostValue = 0;
+      let totalRetailValue = 0;
+      let lowStockCount = 0;
+      let outOfStockCount = 0;
+
+      const items = [];
+      const categoryMap = new Map<string, any>();
+
+      for (const p of products) {
+        totalStock += p.stock;
+
+        const costValue = p.stock * p.costPrice;
+        const retailValue = p.stock * p.salePrice;
+        const potentialProfit = retailValue - costValue;
+        const isLowStock = p.stock <= p.lowStockThreshold;
+
+        totalCostValue += costValue;
+        totalRetailValue += retailValue;
+
+        if (p.stock === 0) outOfStockCount++;
+        else if (isLowStock) lowStockCount++;
+
+        items.push({
+          productId: p.id,
+          productName: p.name,
+          sku: p.sku,
+          category: p.category.name,
+          stock: p.stock,
+          costPrice: p.costPrice,
+          salePrice: p.salePrice,
+          costValue,
+          retailValue,
+          potentialProfit,
+          isLowStock,
+        });
+
+        const cId = p.categoryId;
+        if (!categoryMap.has(cId)) {
+          categoryMap.set(cId, {
+            categoryId: cId,
+            categoryName: p.category.name,
+            productCount: 0,
+            totalStock: 0,
+            totalCostValue: 0,
+            totalRetailValue: 0,
+          });
+        }
+        const cData = categoryMap.get(cId);
+        cData.productCount++;
+        cData.totalStock += p.stock;
+        cData.totalCostValue += costValue;
+        cData.totalRetailValue += retailValue;
+      }
+
+      const categoryBreakdown = Array.from(categoryMap.values()).sort(
+        (a, b) => b.totalRetailValue - a.totalRetailValue
+      );
+
+      return {
+        totalProducts,
+        totalStock,
+        totalCostValue,
+        totalRetailValue,
+        totalPotentialProfit: totalRetailValue - totalCostValue,
+        lowStockCount,
+        outOfStockCount,
+        items,
+        categoryBreakdown,
+      };
     },
-    profitLossReport: async () => {
-      // Placeholder for batch 2
-      throw new Error("Not implemented");
+
+    profitLossReport: async (
+      _: unknown,
+      { startDate, endDate }: { startDate: string | Date; endDate: string | Date },
+      { prisma, user }: Context
+    ) => {
+      if (!user)
+        throw new GraphQLError("Unauthorized", { extensions: { code: "UNAUTHENTICATED" } });
+      if (user.role !== "MANAGER" && user.role !== "ADMIN")
+        throw new GraphQLError("Forbidden", { extensions: { code: "FORBIDDEN" } });
+
+      const dateFilter = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+
+      // 1. Fetch Sales (Income + COGS)
+      const sales = await prisma.sale.findMany({
+        where: { createdAt: dateFilter, isRefunded: false },
+        include: {
+          items: {
+            include: { product: true },
+          },
+        },
+      });
+
+      // 2. Fetch Expenses (AccountTransactions)
+      const expenses = await prisma.accountTransaction.findMany({
+        where: { createdAt: dateFilter, type: "EXPENSE" },
+      });
+
+      let totalIncome = 0;
+      let costOfGoodsSold = 0;
+      let totalExpenses = 0;
+
+      const monthlyMap = new Map<string, any>();
+
+      // Format month e.g., "Jan 2026"
+      const formatMonth = (date: Date) => {
+        return date.toLocaleString("en-US", { month: "short", year: "numeric" });
+      };
+
+      // Process Sales
+      for (const sale of sales) {
+        const monthKey = formatMonth(sale.createdAt);
+        if (!monthlyMap.has(monthKey)) {
+          monthlyMap.set(monthKey, {
+            month: monthKey,
+            income: 0,
+            cogs: 0,
+            expenses: 0,
+            netProfit: 0,
+            _date: sale.createdAt,
+          });
+        }
+        const mRow = monthlyMap.get(monthKey);
+
+        totalIncome += sale.total;
+        mRow.income += sale.total;
+
+        let saleCogs = 0;
+        for (const item of sale.items) {
+          saleCogs += item.quantity * item.product.costPrice;
+        }
+        costOfGoodsSold += saleCogs;
+        mRow.cogs += saleCogs;
+      }
+
+      // Process Expenses
+      for (const exp of expenses) {
+        const monthKey = formatMonth(exp.createdAt);
+        if (!monthlyMap.has(monthKey)) {
+          monthlyMap.set(monthKey, {
+            month: monthKey,
+            income: 0,
+            cogs: 0,
+            expenses: 0,
+            netProfit: 0,
+            _date: exp.createdAt,
+          });
+        }
+        const mRow = monthlyMap.get(monthKey);
+
+        totalExpenses += exp.amount;
+        mRow.expenses += exp.amount;
+      }
+
+      const grossProfit = totalIncome - costOfGoodsSold;
+      const netProfit = grossProfit - totalExpenses;
+      const grossMarginPercent = totalIncome > 0 ? (grossProfit / totalIncome) * 100 : 0;
+      const netMarginPercent = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0;
+
+      const monthlyBreakdown = Array.from(monthlyMap.values())
+        .sort((a, b) => a._date.getTime() - b._date.getTime())
+        .map((row) => {
+          row.netProfit = row.income - row.cogs - row.expenses;
+          return {
+            month: row.month,
+            income: row.income,
+            cogs: row.cogs,
+            expenses: row.expenses,
+            netProfit: row.netProfit,
+          };
+        });
+
+      return {
+        totalIncome,
+        costOfGoodsSold,
+        grossProfit,
+        grossMarginPercent,
+        totalExpenses,
+        netProfit,
+        netMarginPercent,
+        monthlyBreakdown,
+      };
     },
     ledgerReport: async () => {
       // Placeholder for batch 3

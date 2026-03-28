@@ -10,3 +10,4 @@ export { accountResolvers } from "./account.resolver.js";
 export { dashboardResolvers } from "./dashboard.resolver.js";
 export { brandResolvers } from "./brand.resolver.js";
 export { variantResolvers } from "./variant.resolver.js";
+export { reportResolvers } from "./report.resolver.js";

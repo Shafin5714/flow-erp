@@ -378,21 +378,448 @@ flow-erp/
 
 #### 4.7 Reports & Analytics Module
 
+> [!IMPORTANT]
+> The Reports module is a **read-only analytics layer** that aggregates data from existing Sales, Purchases, Products, Accounts, Customers, and Vendors tables. **No new Prisma models or migrations are needed** — all data is derived from existing tables using aggregation queries.
+
+---
+
+##### 4.7.1 Report Types Overview
+
+| # | Report Name | Key Metrics | Data Sources |
+|---|-------------|-------------|--------------|
+| 1 | **Sales Report** | Revenue, item quantities, top products, payment breakdown, daily/monthly trends | `Sale`, `SaleItem`, `Product`, `Customer` |
+| 2 | **Purchase Report** | Spend totals, vendor breakdown, item quantities, payment status | `Purchase`, `PurchaseItem`, `Product`, `Vendor` |
+| 3 | **Inventory Valuation** | Stock on hand, cost value, retail value, potential profit, low-stock items | `Product`, `ProductVariant` |
+| 4 | **Profit & Loss** | Total income, COGS, gross profit, expenses, net profit | `Sale`, `SaleItem`, `Purchase`, `AccountTransaction` |
+| 5 | **Customer & Vendor Ledger** | Outstanding balances, transaction history, top customers/vendors | `Customer`, `Vendor`, `Sale`, `Purchase` |
+
+---
+
+##### 4.7.2 Server (Backend) — GraphQL Schema
+
+###### New file: `server/src/graphql/schema/typeDefs/report.ts`
+
+```graphql
+# ── Common ──────────────────────────────────────────────
+input ReportFilterInput {
+  startDate: DateTime!
+  endDate: DateTime!
+  categoryId: String        # optional filter
+  brandId: String            # optional filter
+  customerId: String         # optional filter (sales)
+  vendorId: String           # optional filter (purchases)
+}
+
+type DailyDataPoint {
+  date: String!              # "2026-03-15"
+  total: Float!
+  count: Int!
+}
+
+# ── 1. Sales Report ────────────────────────────────────
+type TopSellingProduct {
+  productId: String!
+  productName: String!
+  sku: String!
+  quantitySold: Int!
+  revenue: Float!
+}
+
+type PaymentBreakdown {
+  cash: Float!
+  due: Float!
+  cashCount: Int!
+  dueCount: Int!
+}
+
+type SalesReport {
+  totalRevenue: Float!
+  totalSalesCount: Int!
+  totalItemsSold: Int!
+  averageOrderValue: Float!
+  totalDiscount: Float!
+  totalRefunds: Float!
+  refundCount: Int!
+  netRevenue: Float!                    # totalRevenue - totalRefunds
+  paymentBreakdown: PaymentBreakdown!
+  dailyTrend: [DailyDataPoint!]!       # chart data
+  topProducts: [TopSellingProduct!]!    # top 10
+  salesByCategory: [CategoryStat!]!
+}
+
+type CategoryStat {
+  categoryId: String!
+  categoryName: String!
+  revenue: Float!
+  quantity: Int!
+}
+
+# ── 2. Purchase Report ─────────────────────────────────
+type TopPurchasedProduct {
+  productId: String!
+  productName: String!
+  sku: String!
+  quantityPurchased: Int!
+  totalSpend: Float!
+}
+
+type VendorStat {
+  vendorId: String!
+  vendorName: String!
+  totalSpend: Float!
+  purchaseCount: Int!
+  dueAmount: Float!
+}
+
+type PurchaseReport {
+  totalSpend: Float!
+  totalPurchaseCount: Int!
+  totalItemsPurchased: Int!
+  averagePurchaseValue: Float!
+  totalPaid: Float!
+  totalDue: Float!
+  dailyTrend: [DailyDataPoint!]!
+  topProducts: [TopPurchasedProduct!]!
+  vendorBreakdown: [VendorStat!]!
+}
+
+# ── 3. Inventory Valuation ────────────────────────────
+type InventoryItem {
+  productId: String!
+  productName: String!
+  sku: String!
+  category: String!
+  stock: Int!
+  costPrice: Float!
+  salePrice: Float!
+  costValue: Float!                     # stock × costPrice
+  retailValue: Float!                   # stock × salePrice
+  potentialProfit: Float!               # retailValue - costValue
+  isLowStock: Boolean!
+}
+
+type InventoryReport {
+  totalProducts: Int!
+  totalStock: Int!
+  totalCostValue: Float!
+  totalRetailValue: Float!
+  totalPotentialProfit: Float!
+  lowStockCount: Int!
+  outOfStockCount: Int!
+  items: [InventoryItem!]!             # paginated / all
+  categoryBreakdown: [CategoryInventoryStat!]!
+}
+
+type CategoryInventoryStat {
+  categoryId: String!
+  categoryName: String!
+  productCount: Int!
+  totalStock: Int!
+  totalCostValue: Float!
+  totalRetailValue: Float!
+}
+
+# ── 4. Profit & Loss ──────────────────────────────────
+type ProfitLossReport {
+  totalIncome: Float!                   # sum of sale totals
+  costOfGoodsSold: Float!               # sum of (saleItem.qty × product.costPrice)
+  grossProfit: Float!                   # income - COGS
+  grossMarginPercent: Float!            # (grossProfit / income) × 100
+  totalExpenses: Float!                 # sum of EXPENSE transactions
+  netProfit: Float!                     # grossProfit - totalExpenses
+  netMarginPercent: Float!              # (netProfit / income) × 100
+  monthlyBreakdown: [MonthlyPL!]!
+}
+
+type MonthlyPL {
+  month: String!                        # "Jan", "Feb", ...
+  income: Float!
+  cogs: Float!
+  expenses: Float!
+  netProfit: Float!
+}
+
+# ── 5. Customer & Vendor Ledger ───────────────────────
+type CustomerLedgerEntry {
+  customerId: String!
+  customerName: String!
+  phone: String
+  totalPurchases: Float!                # total they've bought
+  totalPaid: Float!
+  outstandingBalance: Float!
+  saleCount: Int!
+  lastPurchaseDate: DateTime
+}
+
+type VendorLedgerEntry {
+  vendorId: String!
+  vendorName: String!
+  phone: String
+  totalPurchases: Float!                # total we bought from them
+  totalPaid: Float!
+  outstandingBalance: Float!
+  purchaseCount: Int!
+  lastPurchaseDate: DateTime
+}
+
+type LedgerReport {
+  customers: [CustomerLedgerEntry!]!
+  totalCustomerOutstanding: Float!
+  vendors: [VendorLedgerEntry!]!
+  totalVendorOutstanding: Float!
+}
+
+# ── Queries ────────────────────────────────────────────
+extend type Query {
+  salesReport(filter: ReportFilterInput!): SalesReport!
+  purchaseReport(filter: ReportFilterInput!): PurchaseReport!
+  inventoryReport(categoryId: String, brandId: String): InventoryReport!
+  profitLossReport(startDate: DateTime!, endDate: DateTime!): ProfitLossReport!
+  ledgerReport: LedgerReport!
+}
+```
+
+**Server tasks:**
+- [x] Dashboard resolver (basic stats aggregation)
+- [ ] Create `report.ts` typeDefs file with the schema above
+- [ ] Register `reportTypeDefs` in `typeDefs/index.ts` and `schema/index.ts`
+- [ ] Create `report.resolver.ts` with the following query resolvers:
+  - [ ] `salesReport` — aggregate `Sale`, `SaleItem`, join `Product`/`Category`
+  - [ ] `purchaseReport` — aggregate `Purchase`, `PurchaseItem`, join `Vendor`
+  - [ ] `inventoryReport` — query all `Product`s, compute valuation, group by category
+  - [ ] `profitLossReport` — combine sales COGS calculation + expense transactions
+  - [ ] `ledgerReport` — aggregate per-customer/vendor outstanding balances
+- [ ] Register `reportResolvers` in `resolvers/index.ts` and `schema/index.ts`
+- [ ] Add `Manager+` authorization checks on all report queries
+
+---
+
+##### 4.7.3 Server — Resolver Implementation Notes
+
+**`salesReport` resolver logic:**
+1. Filter `Sale` by date range (and optionally by `customerId` via `SaleItem → Product → categoryId`)
+2. Aggregate: `_sum.total`, `_count`, `_sum.discount`
+3. Count refunded sales separately (`isRefunded: true`)
+4. For payment breakdown: `groupBy paymentMode`
+5. For daily trend: raw SQL `GROUP BY DATE(createdAt)` or loop by day
+6. For top products: `groupBy` on `SaleItem.productId`, sum `quantity` and `total`
+7. For category breakdown: join `SaleItem → Product → Category`, group by `categoryId`
+
+**`purchaseReport` resolver logic:**
+1. Filter `Purchase` by date range (and optionally by `vendorId`)
+2. Aggregate totals, paid, due
+3. For daily trend: group by date
+4. For top products: `groupBy` on `PurchaseItem.productId`
+5. For vendor breakdown: `groupBy` on `Purchase.vendorId`
+
+**`inventoryReport` resolver logic:**
+1. Query all `Product` with `category` relation included
+2. Compute `costValue = stock × costPrice`, `retailValue = stock × salePrice`
+3. Mark `isLowStock = stock <= lowStockThreshold`
+4. Group by `categoryId` for category breakdown
+5. No date filter needed (inventory is point-in-time)
+
+**`profitLossReport` resolver logic:**
+1. Sum `Sale.total` as income (exclude refunded)
+2. Compute COGS: `SaleItem.quantity × Product.costPrice`
+3. Sum `AccountTransaction` where `type = EXPENSE` as total expenses
+4. Calculate margins and monthly breakdown (loop 12 months or filter range)
+
+**`ledgerReport` resolver logic:**
+1. Query all `Customer`s with balance > 0 or all customers
+2. For each: count sales, sum totals, sum paid, compute outstanding
+3. Same for `Vendor`s with purchases
+4. Can use `prisma.customer.findMany({ include: { sales: true } })` and compute
+
+---
+
+##### 4.7.4 Client (Frontend) — File Structure
+
+```
+client/app/(dashboard)/reports/
+├── page.tsx                       # Reports landing page (overview cards + nav)
+├── sales/
+│   └── page.tsx                   # Sales Report page
+├── purchases/
+│   └── page.tsx                   # Purchase Report page
+├── inventory/
+│   └── page.tsx                   # Inventory Valuation page
+├── profit-loss/
+│   └── page.tsx                   # Profit & Loss page
+└── ledger/
+    └── page.tsx                   # Customer & Vendor Ledger page
+
+client/components/reports/
+├── report-filters.tsx             # Shared date range + category/brand filter bar
+├── report-stat-card.tsx           # Reusable stat card (icon, label, value, trend)
+├── sales-chart.tsx                # Sales trend line/bar chart (Recharts)
+├── purchase-chart.tsx             # Purchase trend chart
+├── top-products-table.tsx         # Top products data table
+├── category-breakdown-chart.tsx   # Pie/donut chart for category distribution
+├── vendor-breakdown-table.tsx     # Vendor spend breakdown table
+├── inventory-table.tsx            # Inventory valuation data table
+├── pl-summary-cards.tsx           # P&L summary stat cards
+├── monthly-pl-chart.tsx           # Monthly P&L bar chart
+├── customer-ledger-table.tsx      # Customer outstanding balances table
+└── vendor-ledger-table.tsx        # Vendor outstanding balances table
+
+client/lib/graphql/reports.ts      # All report GraphQL query definitions
+```
+
+---
+
+##### 4.7.5 Client — GraphQL Operations (`lib/graphql/reports.ts`)
+
+```typescript
+// Queries to implement:
+GET_SALES_REPORT         // salesReport(filter: ReportFilterInput!)
+GET_PURCHASE_REPORT      // purchaseReport(filter: ReportFilterInput!)
+GET_INVENTORY_REPORT     // inventoryReport(categoryId?, brandId?)
+GET_PROFIT_LOSS_REPORT   // profitLossReport(startDate, endDate)
+GET_LEDGER_REPORT        // ledgerReport
+```
+
+---
+
+##### 4.7.6 Client — Page Designs
+
+**Reports Landing Page (`/reports`):**
+- Summary cards: Total Revenue, Total Purchases, Gross Profit, Outstanding Dues
+- Quick navigation tiles to each sub-report (Sales, Purchases, Inventory, P&L, Ledger)
+- Uses data from `dashboardStats` query for quick overview
+
+**Sales Report (`/reports/sales`):**
+- Filter bar: Date range picker, category dropdown, customer search
+- Stat cards row: Total Revenue, Sales Count, Avg Order Value, Refunds
+- Line/bar chart: Daily sales trend
+- Pie chart: Sales by payment mode (Cash vs Due)
+- Data table: Top 10 selling products (product name, qty sold, revenue)
+- Donut chart: Sales by category
+
+**Purchase Report (`/reports/purchases`):**
+- Filter bar: Date range picker, vendor selector
+- Stat cards row: Total Spend, Purchase Count, Total Paid, Total Due
+- Line/bar chart: Daily purchase trend
+- Data table: Top 10 purchased products
+- Data table: Vendor breakdown (vendor name, spend, count, due)
+
+**Inventory Valuation (`/reports/inventory`):**
+- Filter bar: Category dropdown, brand dropdown (no date filter needed)
+- Stat cards row: Total Products, Total Stock, Cost Value, Retail Value, Potential Profit
+- Alert badges: Low Stock count, Out of Stock count
+- Full data table: All products with stock, cost price, sale price, values (sortable, searchable)
+- Donut chart: Stock value by category
+
+**Profit & Loss (`/reports/profit-loss`):**
+- Filter bar: Date range picker
+- Large summary cards: Income, COGS, Gross Profit (margin%), Expenses, Net Profit (margin%)
+- Stacked bar chart: Monthly income vs COGS vs expenses
+- Table: Monthly breakdown (month, income, COGS, expenses, net profit)
+
+**Customer & Vendor Ledger (`/reports/ledger`):**
+- Tabs: Customers | Vendors
+- Stat cards: Total Outstanding (Customers), Total Outstanding (Vendors)
+- **Customer tab**: Data table with name, phone, total purchases, paid, outstanding, last purchase date
+- **Vendor tab**: Data table with name, phone, total purchases, paid, outstanding, last purchase date
+- Sort by outstanding balance (descending)
+
+---
+
+##### 4.7.7 Sidebar Navigation Update
+
+Update `app-sidebar.tsx` to expand the "Reports" nav item with sub-routes:
+
+```typescript
+{
+  title: "Reports",
+  icon: FileText,
+  items: [
+    { title: "Overview", href: "/reports" },
+    { title: "Sales Report", href: "/reports/sales" },
+    { title: "Purchase Report", href: "/reports/purchases" },
+    { title: "Inventory", href: "/reports/inventory" },
+    { title: "Profit & Loss", href: "/reports/profit-loss" },
+    { title: "Ledger", href: "/reports/ledger" },
+  ],
+}
+```
+
+---
+
+##### 4.7.8 Charts Library
+
+Use **Recharts** (already compatible with React/Next.js):
+- `npm install recharts` (in client)
+- Components: `LineChart`, `BarChart`, `PieChart`, `ResponsiveContainer`
+- shadcn/ui chart components can also be leveraged if available
+
+---
+
+##### 4.7.9 PDF / Excel Export (Future Enhancement)
+
+- **PDF Export**: Use `@react-pdf/renderer` (already in the project for invoices) to generate report PDFs
+- **Excel Export**: Use `xlsx` or `exceljs` library for `.xlsx` downloads
+- Each report page will include a "Download PDF" and "Export Excel" button in the filter bar
+- This is a **Phase 2** enhancement, not required for initial implementation
+
+---
+
+##### 4.7.10 Implementation Checklist
+
 **Server (Backend):**
 - [x] Dashboard resolver (basic stats aggregation)
-- [ ] Sales report resolver (daily/monthly/custom range)
-- [ ] Purchase report resolver
-- [ ] Inventory valuation report resolver
-- [ ] Profit & Loss summary resolver
+- [ ] Create `report.ts` typeDefs file
+- [ ] Register report typeDefs in `typeDefs/index.ts`
+- [ ] Create `report.resolver.ts`
+- [ ] Implement `salesReport` query resolver
+- [ ] Implement `purchaseReport` query resolver
+- [ ] Implement `inventoryReport` query resolver
+- [ ] Implement `profitLossReport` query resolver
+- [ ] Implement `ledgerReport` query resolver
+- [ ] Register report resolvers in `resolvers/index.ts`
+- [ ] Wire up in `schema/index.ts`
+- [ ] Add authorization guards (Manager+)
 
 **Client (Frontend):**
-- [ ] Reports page (`reports/page.tsx`)
-- [ ] Report filters (date range, category)
-- [ ] Sales report with charts & tables
-- [ ] Purchase report with charts & tables
-- [ ] Inventory valuation report
-- [ ] Profit & Loss summary cards
-- [ ] Export to PDF/Excel (future)
+- [ ] Install Recharts (`npm install recharts`)
+- [ ] Create `lib/graphql/reports.ts` with all query definitions
+- [ ] Create shared `components/reports/report-filters.tsx`
+- [ ] Create shared `components/reports/report-stat-card.tsx`
+- [ ] Build Reports landing page (`reports/page.tsx`)
+- [ ] Build Sales Report page (`reports/sales/page.tsx`)
+  - [ ] Sales trend chart component
+  - [ ] Top selling products table
+  - [ ] Category breakdown chart
+- [ ] Build Purchase Report page (`reports/purchases/page.tsx`)
+  - [ ] Purchase trend chart component
+  - [ ] Vendor breakdown table
+- [ ] Build Inventory Report page (`reports/inventory/page.tsx`)
+  - [ ] Inventory valuation table
+  - [ ] Category inventory chart
+- [ ] Build Profit & Loss page (`reports/profit-loss/page.tsx`)
+  - [ ] P&L summary cards
+  - [ ] Monthly P&L chart
+- [ ] Build Ledger page (`reports/ledger/page.tsx`)
+  - [ ] Customer ledger table
+  - [ ] Vendor ledger table
+- [ ] Update sidebar navigation with sub-routes
+- [ ] Responsive design for all report pages
+- [ ] Dark mode support for all charts and components
+
+---
+
+##### 4.7.11 Build Order (Recommended Sequence)
+
+1. **Backend first**: `report.ts` typeDefs → `report.resolver.ts` → register in schema
+2. **Shared components**: `report-filters.tsx`, `report-stat-card.tsx`
+3. **Reports landing page**: `/reports` with overview cards
+4. **Sales Report**: Most impactful — implement first with charts
+5. **Purchase Report**: Similar structure to sales
+6. **Inventory Valuation**: Point-in-time, no date filter
+7. **Profit & Loss**: Combines sales + expense data
+8. **Ledger**: Customer/vendor outstanding balances
+9. **Sidebar update**: Add sub-route navigation
+10. **Polish**: Dark mode, responsive, loading states, error handling
 
 ---
 

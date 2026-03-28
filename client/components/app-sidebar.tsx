@@ -85,8 +85,15 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: "Reports",
-    href: "/reports",
     icon: FileText,
+    items: [
+      { title: "Overview", href: "/reports" },
+      { title: "Sales", href: "/reports/sales" },
+      { title: "Purchases", href: "/reports/purchases" },
+      { title: "Inventory", href: "/reports/inventory" },
+      { title: "Profit & Loss", href: "/reports/profit-loss" },
+      { title: "Ledger", href: "/reports/ledger" },
+    ],
   },
 ];
 

@@ -126,3 +126,32 @@ export const GET_PROFIT_LOSS_REPORT = gql`
     }
   }
 `;
+
+export const GET_LEDGER_REPORT = gql`
+  query GetLedgerReport {
+    ledgerReport {
+      totalCustomerOutstanding
+      totalVendorOutstanding
+      customers {
+        customerId
+        customerName
+        phone
+        totalPurchases
+        totalPaid
+        outstandingBalance
+        saleCount
+        lastPurchaseDate
+      }
+      vendors {
+        vendorId
+        vendorName
+        phone
+        totalPurchases
+        totalPaid
+        outstandingBalance
+        purchaseCount
+        lastPurchaseDate
+      }
+    }
+  }
+`;

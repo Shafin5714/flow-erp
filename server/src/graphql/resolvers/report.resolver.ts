@@ -506,9 +506,98 @@ export const reportResolvers = {
         monthlyBreakdown,
       };
     },
-    ledgerReport: async () => {
-      // Placeholder for batch 3
-      throw new Error("Not implemented");
+    ledgerReport: async (_: unknown, __: unknown, { prisma, user }: Context) => {
+      if (!user)
+        throw new GraphQLError("Unauthorized", { extensions: { code: "UNAUTHENTICATED" } });
+      if (user.role !== "MANAGER" && user.role !== "ADMIN")
+        throw new GraphQLError("Forbidden", { extensions: { code: "FORBIDDEN" } });
+
+      const allCustomers = await prisma.customer.findMany({
+        include: {
+          sales: {
+            select: { total: true, paidAmount: true, createdAt: true },
+          },
+        },
+      });
+
+      const allVendors = await prisma.vendor.findMany({
+        include: {
+          purchases: {
+            select: { total: true, paidAmount: true, createdAt: true },
+          },
+        },
+      });
+
+      const customers = [];
+      let totalCustomerOutstanding = 0;
+
+      for (const c of allCustomers) {
+        let totalPurchases = 0;
+        let totalPaid = 0;
+        let lastPurchaseDate = null;
+
+        for (const s of c.sales) {
+          totalPurchases += s.total;
+          totalPaid += s.paidAmount;
+          if (!lastPurchaseDate || s.createdAt > lastPurchaseDate) {
+            lastPurchaseDate = s.createdAt;
+          }
+        }
+
+        totalCustomerOutstanding += c.balance;
+
+        customers.push({
+          customerId: c.id,
+          customerName: c.name,
+          phone: c.phone || "",
+          totalPurchases,
+          totalPaid,
+          outstandingBalance: c.balance,
+          saleCount: c.sales.length,
+          lastPurchaseDate,
+        });
+      }
+
+      customers.sort((a, b) => b.outstandingBalance - a.outstandingBalance);
+
+      const vendors = [];
+      let totalVendorOutstanding = 0;
+
+      for (const v of allVendors) {
+        let totalPurchases = 0;
+        let totalPaid = 0;
+        let lastPurchaseDate = null;
+
+        for (const p of v.purchases) {
+          totalPurchases += p.total;
+          totalPaid += p.paidAmount;
+          if (!lastPurchaseDate || p.createdAt > lastPurchaseDate) {
+            lastPurchaseDate = p.createdAt;
+          }
+        }
+
+        totalVendorOutstanding += v.balance;
+
+        vendors.push({
+          vendorId: v.id,
+          vendorName: v.name,
+          phone: v.phone || "",
+          totalPurchases,
+          totalPaid,
+          outstandingBalance: v.balance,
+          purchaseCount: v.purchases.length,
+          lastPurchaseDate,
+        });
+      }
+
+      vendors.sort((a, b) => b.outstandingBalance - a.outstandingBalance);
+
+      return {
+        customers,
+        totalCustomerOutstanding,
+        vendors,
+        totalVendorOutstanding,
+      };
     },
   },
 };
